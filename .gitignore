@@ -1,0 +1,39 @@
+# Gradle
+.gradle/
+build/
+out/
+classes/
+
+# Eclipse
+*.launch
+.settings/
+.metadata/
+.classpath
+.project
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Visual Studio Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Fabric
+run/
+logs/
+
+# Minecraft
+crash-reports/
+saves/
+screenshots/
+options.txt
+usercache.json
+usernamecache.json
+
+# AI reference (local development only)
+ai_reference/
