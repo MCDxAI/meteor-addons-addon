@@ -1,11 +1,12 @@
 package com.cope.meteoraddons.gui.screens;
 
+import com.cope.meteoraddons.addons.Addon;
+import com.cope.meteoraddons.addons.OnlineAddon;
 import com.cope.meteoraddons.models.AddonMetadata;
 import com.cope.meteoraddons.systems.AddonManager;
-import com.cope.meteoraddons.util.CacheManager;
+import com.cope.meteoraddons.util.IconCache;
 import meteordevelopment.meteorclient.gui.GuiTheme;
 import meteordevelopment.meteorclient.gui.WindowScreen;
-import meteordevelopment.meteorclient.gui.widgets.containers.WContainer;
 import meteordevelopment.meteorclient.gui.widgets.containers.WTable;
 import meteordevelopment.meteorclient.gui.widgets.containers.WVerticalList;
 import meteordevelopment.meteorclient.gui.widgets.pressable.WButton;
@@ -14,17 +15,19 @@ import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.Util;
 
+import java.util.List;
+
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 
 /**
  * Detail screen for viewing and downloading an addon.
  */
 public class AddonDetailScreen extends WindowScreen {
-    private final AddonMetadata addon;
+    private final Addon addon;
     private final Screen parent;
 
-    public AddonDetailScreen(GuiTheme theme, AddonMetadata addon, Screen parent) {
-        super(theme, addon.name);
+    public AddonDetailScreen(GuiTheme theme, Addon addon, Screen parent) {
+        super(theme, addon.getName());
         this.addon = addon;
         this.parent = parent;
     }
@@ -32,118 +35,135 @@ public class AddonDetailScreen extends WindowScreen {
     @Override
     public void initWidgets() {
         // Icon
-        Texture iconTexture = CacheManager.getIconTexture(addon);
+        Texture iconTexture = IconCache.get128(addon);
         add(theme.texture(96, 96, 0, iconTexture)).centerX();
 
-        // Name and verified badge
+        // Name
         WTable header = add(theme.table()).expandX().widget();
-        header.add(theme.label(addon.name, true)).expandCellX();
-        if (addon.verified) {
-            header.add(theme.label("✓ Verified"));
+        header.add(theme.label(addon.getName(), true)).expandCellX();
+
+        // Show verified badge for online addons
+        if (addon instanceof OnlineAddon) {
+            AddonMetadata metadata = ((OnlineAddon) addon).getMetadata();
+            if (metadata.verified) {
+                header.add(theme.label("✓ Verified"));
+            }
         }
 
         // Description
-        String description = addon.getDisplayDescription();
-        if (!description.isEmpty()) {
-            add(theme.label(description)).expandX();
-        }
+        addon.getDescription().ifPresent(desc -> {
+            add(theme.label(desc)).expandX();
+        });
 
         // Authors
-        if (addon.authors != null && !addon.authors.isEmpty()) {
+        List<String> authors = addon.getAuthors();
+        if (!authors.isEmpty()) {
             WVerticalList authorsList = add(theme.verticalList()).expandX().widget();
             authorsList.add(theme.label("Authors:"));
-            for (String author : addon.authors) {
+            for (String author : authors) {
                 authorsList.add(theme.label("  • " + author));
             }
         }
 
-        add(theme.horizontalSeparator()).expandX();
-
-        // Stats
-        if (addon.repo != null) {
-            WTable stats = add(theme.table()).expandX().widget();
-            stats.add(theme.label("Stars: "));
-            stats.add(theme.label(String.valueOf(addon.repo.stars)));
-            stats.row();
-            stats.add(theme.label("Downloads: "));
-            stats.add(theme.label(String.valueOf(addon.repo.downloads)));
-            stats.row();
-            stats.add(theme.label("Last Update: "));
-            stats.add(theme.label(addon.repo.last_update));
+        // Version
+        String version = addon.getVersion();
+        if (version != null && !version.isEmpty()) {
+            add(theme.label("Version: " + version)).expandX();
         }
 
         add(theme.horizontalSeparator()).expandX();
 
-        // Features
-        if (addon.features != null) {
-            WVerticalList featuresList = add(theme.verticalList()).expandX().widget();
+        // Stats (only for online addons)
+        if (addon instanceof OnlineAddon) {
+            AddonMetadata metadata = ((OnlineAddon) addon).getMetadata();
+            if (metadata.repo != null) {
+                WTable stats = add(theme.table()).expandX().widget();
+                stats.add(theme.label("Stars: "));
+                stats.add(theme.label(String.valueOf(metadata.repo.stars)));
+                stats.row();
+                stats.add(theme.label("Downloads: "));
+                stats.add(theme.label(String.valueOf(metadata.repo.downloads)));
+                stats.row();
+                stats.add(theme.label("Last Update: "));
+                stats.add(theme.label(metadata.repo.last_update));
 
-            if (addon.features.modules != null && !addon.features.modules.isEmpty()) {
-                featuresList.add(theme.label("Modules (" + addon.features.modules.size() + ")"));
-                int count = 0;
-                for (String module : addon.features.modules) {
-                    if (count++ >= 10) {
-                        featuresList.add(theme.label("  ... and " + (addon.features.modules.size() - 10) + " more"));
-                        break;
+                add(theme.horizontalSeparator()).expandX();
+            }
+
+            // Features
+            if (metadata.features != null) {
+                WVerticalList featuresList = add(theme.verticalList()).expandX().widget();
+
+                if (metadata.features.modules != null && !metadata.features.modules.isEmpty()) {
+                    featuresList.add(theme.label("Modules (" + metadata.features.modules.size() + ")"));
+                    int count = 0;
+                    for (String module : metadata.features.modules) {
+                        if (count++ >= 10) {
+                            featuresList.add(theme.label("  ... and " + (metadata.features.modules.size() - 10) + " more"));
+                            break;
+                        }
+                        featuresList.add(theme.label("  • " + module));
                     }
-                    featuresList.add(theme.label("  • " + module));
                 }
-            }
 
-            if (addon.features.commands != null && !addon.features.commands.isEmpty()) {
-                featuresList.add(theme.label("Commands (" + addon.features.commands.size() + ")"));
-                for (String command : addon.features.commands) {
-                    featuresList.add(theme.label("  • " + command));
+                if (metadata.features.commands != null && !metadata.features.commands.isEmpty()) {
+                    featuresList.add(theme.label("Commands (" + metadata.features.commands.size() + ")"));
+                    for (String command : metadata.features.commands) {
+                        featuresList.add(theme.label("  • " + command));
+                    }
                 }
-            }
 
-            if (addon.features.hud_elements != null && !addon.features.hud_elements.isEmpty()) {
-                featuresList.add(theme.label("HUD Elements (" + addon.features.hud_elements.size() + ")"));
-                for (String hud : addon.features.hud_elements) {
-                    featuresList.add(theme.label("  • " + hud));
+                if (metadata.features.hud_elements != null && !metadata.features.hud_elements.isEmpty()) {
+                    featuresList.add(theme.label("HUD Elements (" + metadata.features.hud_elements.size() + ")"));
+                    for (String hud : metadata.features.hud_elements) {
+                        featuresList.add(theme.label("  • " + hud));
+                    }
                 }
+
+                add(theme.horizontalSeparator()).expandX();
             }
         }
-
-        add(theme.horizontalSeparator()).expandX();
 
         // Links
         WTable links = add(theme.table()).expandX().widget();
+        boolean hasLinks = false;
 
-        if (addon.links != null && addon.links.github != null) {
+        if (addon.getGithubUrl().isPresent()) {
             WButton githubButton = links.add(theme.button("GitHub")).expandCellX().widget();
-            final String githubUrl = addon.links.github;
+            final String githubUrl = addon.getGithubUrl().get();
             githubButton.action = () -> Util.getOperatingSystem().open(githubUrl);
+            hasLinks = true;
         }
 
-        String discord = addon.getDiscordUrl();
-        if (discord != null) {
+        if (addon.getDiscordUrl().isPresent()) {
             WButton discordButton = links.add(theme.button("Discord")).expandCellX().widget();
-            final String discordUrl = discord;
+            final String discordUrl = addon.getDiscordUrl().get();
             discordButton.action = () -> Util.getOperatingSystem().open(discordUrl);
+            hasLinks = true;
         }
 
-        String homepage = addon.getHomepageUrl();
-        if (homepage != null) {
+        if (addon.getHomepageUrl().isPresent()) {
             WButton homepageButton = links.add(theme.button("Homepage")).expandCellX().widget();
-            final String homepageUrl = homepage;
+            final String homepageUrl = addon.getHomepageUrl().get();
             homepageButton.action = () -> Util.getOperatingSystem().open(homepageUrl);
+            hasLinks = true;
         }
 
-        add(theme.horizontalSeparator()).expandX();
+        if (hasLinks) {
+            add(theme.horizontalSeparator()).expandX();
+        }
 
-        // Download button
+        // Download button (only for online addons)
         WTable actions = add(theme.table()).expandX().widget();
 
-        boolean isInstalled = AddonManager.get().isInstalled(addon.name);
-        if (isInstalled) {
+        if (addon.isInstalled()) {
             actions.add(theme.label("✓ Installed")).expandCellX();
-        } else {
+        } else if (addon instanceof OnlineAddon) {
             WButton downloadButton = actions.add(theme.button("Download")).expandCellX().widget();
             downloadButton.action = () -> {
                 downloadButton.set("Downloading...");
                 MeteorExecutor.execute(() -> {
-                    boolean success = AddonManager.get().downloadAddon(addon);
+                    boolean success = AddonManager.get().downloadAddon((OnlineAddon) addon);
                     mc.execute(() -> {
                         if (success) {
                             downloadButton.set("Downloaded!");

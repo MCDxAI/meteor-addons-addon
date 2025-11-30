@@ -51,6 +51,32 @@ public class HttpClient {
     }
 
     /**
+     * Download a URL's content as a byte array.
+     *
+     * @param url URL to download from
+     * @return response body as byte array
+     * @throws IOException if the request fails
+     */
+    public static byte[] downloadBytes(String url) throws IOException {
+        Request request = new Request.Builder()
+            .url(url)
+            .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("HTTP request failed: " + response.code() + " " + response.message());
+            }
+
+            ResponseBody body = response.body();
+            if (body == null) {
+                throw new IOException("Response body is null");
+            }
+
+            return body.bytes();
+        }
+    }
+
+    /**
      * Download a file from a URL to a local path.
      * Creates parent directories if they don't exist.
      *
