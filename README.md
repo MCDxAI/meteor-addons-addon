@@ -14,8 +14,6 @@ A Meteor Client addon that enables browsing, installing, and updating addons dir
 Meteor Addons enables browsing, installing, and updating addons directly from within the Meteor Client.
 Addon data is sourced from meteor-addon-scanner to ensure a wide range of available extensions.
 
-</div>
-
 ## Features
 
 | Feature | Description |
@@ -24,16 +22,23 @@ Addon data is sourced from meteor-addon-scanner to ensure a wide range of availa
 | **Metadata Viewer** | View descriptions, features, and stats for each addon |
 | **One-Click Install** | Install new addons instantly without leaving the game |
 | **Update Manager** | Keep your installed addons up to date with a single click |
+| **Addon Scanner** | Integration with meteor-addon-scanner for a comprehensive list |
 
 ## Building
 
 To build the project locally:
 
+</div>
+
 ```bash
 ./gradlew build
 ```
 
+<div align="center">
+
 ## Structure
+
+</div>
 
 ```
 src/main/java/com/cope/meteoraddons/
@@ -58,6 +63,8 @@ src/main/java/com/cope/meteoraddons/
     └── VersionUtil.java        # Utility for version comparison
 ```
 
+<div align="center">
+
 ## Acknowledgements
 
 Based on work from [addon-menu](https://github.com/crosby-moe/addon-menu) by crosby-moe.
@@ -65,3 +72,5 @@ Based on work from [addon-menu](https://github.com/crosby-moe/addon-menu) by cro
 ## License
 
 This project is licensed under the [CC0-1.0 license](LICENSE).
+
+</div>
