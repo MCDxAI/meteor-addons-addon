@@ -1,0 +1,87 @@
+name: Build and Release Addon
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 1.2.3)'
+        required: true
+        type: string
+      release_name:
+        description: 'Optional release title override'
+        required: false
+        type: string
+      prerelease:
+        description: 'Mark the manual release as a prerelease'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Determine release metadata
+        id: meta
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="v${{ github.event.inputs.version }}"
+            RELEASE_NAME="${{ github.event.inputs.release_name }}"
+            if [ -z "$RELEASE_NAME" ]; then
+              RELEASE_NAME="$TAG"
+            fi
+            if [ "${{ github.event.inputs.prerelease }}" = "true" ]; then
+              PRERELEASE="true"
+            else
+              PRERELEASE="false"
+            fi
+          else
+            # Use version from gradle.properties + timestamp for dev builds
+            VERSION=$(grep "^mod_version=" gradle.properties | cut -d'=' -f2)
+            TIMESTAMP=$(date -u +%Y%m%d-%H%M%S)
+            TAG="v${VERSION}-dev.${TIMESTAMP}"
+            RELEASE_NAME="Dev Build (${TIMESTAMP})"
+            PRERELEASE="true"
+          fi
+          {
+            echo "tag_name=$TAG"
+            echo "release_name=$RELEASE_NAME"
+            echo "prerelease=$PRERELEASE"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build --no-configuration-cache
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.meta.outputs.tag_name }}
+          name: ${{ steps.meta.outputs.release_name }}
+          prerelease: ${{ steps.meta.outputs.prerelease }}
+          files: build/libs/*.jar
