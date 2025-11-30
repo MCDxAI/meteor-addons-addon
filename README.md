@@ -24,7 +24,6 @@ Addon data is sourced from meteor-addon-scanner to ensure a wide range of availa
 | **Metadata Viewer** | View descriptions, features, and stats for each addon |
 | **One-Click Install** | Install new addons instantly without leaving the game |
 | **Update Manager** | Keep your installed addons up to date with a single click |
-| **Addon Scanner** | Integration with meteor-addon-scanner for a comprehensive list |
 
 ## Building
 
