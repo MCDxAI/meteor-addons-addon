@@ -32,24 +32,21 @@ public class WAddonCard extends WVerticalList {
 
     @Override
     public void init() {
-        // Icon row - main icon with optional installed indicator
-        WHorizontalList iconRow = add(theme.horizontalList()).centerX().widget();
+        // Icon (128x128, scaled down to 64x64 by GPU)
+        Texture iconTexture = IconCache.get(addon);
+        add(theme.texture(64, 64, 0, iconTexture)).centerX();
 
-        // Main icon (64x64)
-        Texture iconTexture = IconCache.get64(addon);
-        iconRow.add(theme.texture(64, 64, 0, iconTexture));
+        // Title row with optional installed indicator
+        WHorizontalList titleRow = add(theme.horizontalList()).centerX().widget();
+        titleRow.add(theme.label(addon.getName()));
 
-        // Add installed indicator badge if installed
+        // Add installed indicator after title if installed
         if (addon.isInstalled()) {
             Texture installedIcon = IconCache.getInstalledIndicator();
             if (installedIcon != null) {
-                // Add indicator next to icon (32x32 badge)
-                iconRow.add(theme.texture(32, 32, 0, installedIcon)).padLeft(4);
+                titleRow.add(theme.texture(32, 32, 0, installedIcon)).padLeft(4);
             }
         }
-
-        // Title (with wrapping support)
-        add(theme.label(addon.getName())).centerX().expandX();
 
         // View details button
         WButton viewButton = add(theme.button("View Details")).expandX().widget();

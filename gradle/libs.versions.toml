@@ -16,6 +16,7 @@ meteor = "1.21.10-SNAPSHOT"
 junit = "5.10.2"
 gson = "2.11.0"
 okhttp = "4.12.0"
+guava = "33.5.0-jre"
 
 [libraries]
 # Fabric base
@@ -29,6 +30,7 @@ meteor-client = { module = "meteordevelopment:meteor-client", version.ref = "met
 # Dependencies for addon functionality
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
 
 # Testing
 junitApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }

@@ -2,149 +2,125 @@ package com.cope.meteoraddons.util;
 
 import com.cope.meteoraddons.MeteorAddonsAddon;
 import com.cope.meteoraddons.addons.Addon;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.cache.RemovalListener;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.TextureFormat;
 import meteordevelopment.meteorclient.renderer.Texture;
-import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
+import net.minecraft.client.texture.NativeImage;
+import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static meteordevelopment.meteorclient.MeteorClient.mc;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Simple icon cache for addon textures.
- * Caches loaded textures by addon ID to avoid reloading.
- * Supports background preloading to prevent render thread lag.
+ * Icon cache using Guava's LoadingCache for synchronous blocking texture loading.
+ * Based on addon-menu's implementation, adapted for 1.21.10 API changes.
+ * Textures are loaded on-demand when widgets call get() (on render thread).
  */
-public class IconCache {
-    private static final Map<String, Texture> cache64 = new HashMap<>();
-    private static final Map<String, Texture> cache128 = new HashMap<>();
-    private static Texture DEFAULT_64 = null;
-    private static Texture DEFAULT_128 = null;
+public final class IconCache {
+    private static final Texture DEFAULT_TEXTURE = new Texture(128, 128, TextureFormat.RGBA8, FilterMode.LINEAR, FilterMode.LINEAR);
     private static Texture INSTALLED_INDICATOR = null;
 
-    /**
-     * Initialize default textures.
-     */
-    public static void init() {
-        DEFAULT_64 = new AddonIconTexture(64);
-        DEFAULT_128 = new AddonIconTexture(128);
-
-        // Load installed indicator icon (32x32 for top-right corner of cards)
-        try {
-            InputStream stream = IconCache.class.getResourceAsStream("/assets/meteor-addons/installed-icon.png");
-            if (stream != null) {
-                INSTALLED_INDICATOR = new AddonIconTexture(stream, 32);
+    private static final LoadingCache<Addon, Texture> TEXTURE_CACHE = CacheBuilder.newBuilder()
+        .expireAfterAccess(5, TimeUnit.MINUTES)
+        .removalListener((RemovalListener<Addon, Texture>) notification -> {
+            Texture texture = notification.getValue();
+            if (texture != null && texture != DEFAULT_TEXTURE) {
+                texture.close();
             }
-        } catch (Exception e) {
-            MeteorAddonsAddon.LOG.error("Failed to load installed indicator icon", e);
+        })
+        .build(new CacheLoader<>() {
+            @Override
+            public @NotNull Texture load(@NotNull Addon addon) throws Exception {
+                Optional<InputStream> iconStream = addon.getIconStream();
+
+                if (iconStream.isEmpty()) {
+                    return DEFAULT_TEXTURE;
+                }
+
+                try (InputStream inputStream = iconStream.get()) {
+                    NativeImage nativeImage = NativeImage.read(inputStream);
+
+                    Texture texture = new Texture(nativeImage.getWidth(), nativeImage.getHeight(),
+                        TextureFormat.RGBA8, FilterMode.LINEAR, FilterMode.LINEAR);
+
+                    // 1.21.10: Use makePixelArray() instead of direct memory access
+                    uploadNativeImageToTexture(nativeImage, texture);
+
+                    nativeImage.close();
+                    return texture;
+                } catch (IOException e) {
+                    MeteorAddonsAddon.LOG.warn("Failed to load icon for {}: {}", addon.getName(), e.getMessage());
+                    return DEFAULT_TEXTURE;
+                }
+            }
+        });
+
+    /**
+     * Upload NativeImage to Texture (1.21.10 compatible).
+     * addon-menu uses MemoryUtil.memCopy with imageId(), but that's not available in 1.21.10.
+     */
+    @SuppressWarnings("deprecation")
+    private static void uploadNativeImageToTexture(NativeImage image, Texture texture) {
+        int[] pixels = image.makePixelArray();
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        // Convert ABGR to RGBA
+        byte[] bytes = new byte[width * height * 4];
+        for (int i = 0; i < pixels.length; i++) {
+            int color = pixels[i];
+            bytes[i * 4] = (byte) ((color >> 16) & 0xFF);     // R
+            bytes[i * 4 + 1] = (byte) ((color >> 8) & 0xFF);  // G
+            bytes[i * 4 + 2] = (byte) (color & 0xFF);         // B
+            bytes[i * 4 + 3] = (byte) ((color >> 24) & 0xFF); // A
+        }
+
+        texture.upload(bytes);
+    }
+
+    /**
+     * Get icon texture for an addon (128x128 or source resolution).
+     * This method BLOCKS until the texture is loaded.
+     * MUST be called from render thread (during widget init).
+     */
+    public static Texture get(Addon addon) {
+        try {
+            return TEXTURE_CACHE.get(addon);
+        } catch (ExecutionException e) {
+            MeteorAddonsAddon.LOG.warn("Error loading texture for {}: {}", addon.getName(), e.getMessage());
+            return DEFAULT_TEXTURE;
         }
     }
 
     /**
      * Get the installed indicator texture (32x32 green checkmark).
+     * Lazy-loaded on first access.
      */
     public static Texture getInstalledIndicator() {
         if (INSTALLED_INDICATOR == null) {
-            init();
+            try {
+                InputStream stream = IconCache.class.getResourceAsStream("/assets/meteor-addons/installed-icon.png");
+                if (stream != null) {
+                    INSTALLED_INDICATOR = new AddonIconTexture(stream, 32);
+                }
+            } catch (Exception e) {
+                MeteorAddonsAddon.LOG.error("Failed to load installed indicator icon", e);
+            }
         }
         return INSTALLED_INDICATOR;
     }
 
     /**
-     * Get 64x64 icon texture for an addon (for grid view).
-     */
-    public static Texture get64(Addon addon) {
-        return getTexture(addon, 64, cache64, DEFAULT_64);
-    }
-
-    /**
-     * Get 128x128 icon texture for an addon (for list view).
-     */
-    public static Texture get128(Addon addon) {
-        return getTexture(addon, 128, cache128, DEFAULT_128);
-    }
-
-    /**
-     * Get texture from cache or load it.
-     */
-    private static Texture getTexture(Addon addon, int size, Map<String, Texture> cache, Texture defaultTexture) {
-        // Ensure defaults are initialized
-        if (defaultTexture == null) {
-            init();
-            defaultTexture = (size == 64) ? DEFAULT_64 : DEFAULT_128;
-        }
-
-        String cacheKey = addon.getId() + "_" + size;
-
-        // Return cached texture if available
-        if (cache.containsKey(cacheKey)) {
-            Texture cached = cache.get(cacheKey);
-            return cached != null ? cached : defaultTexture;
-        }
-
-        // Try to load icon from addon
-        try {
-            InputStream iconStream = addon.getIconStream().orElse(null);
-            if (iconStream != null) {
-                Texture texture = new AddonIconTexture(iconStream, size);
-                if (texture != null) {
-                    cache.put(cacheKey, texture);
-                    return texture;
-                }
-            }
-        } catch (Exception e) {
-            MeteorAddonsAddon.LOG.warn("Failed to load icon for {}: {}", addon.getName(), e.getMessage());
-        }
-
-        // Cache the default texture for this addon so we don't retry every frame
-        cache.put(cacheKey, defaultTexture);
-
-        // Return default texture as fallback
-        return defaultTexture;
-    }
-
-    /**
-     * Preload icons for a list of addons in the background.
-     * This prevents lag when first opening the GUI.
-     */
-    public static void preloadIcons(List<Addon> addons, int size) {
-        MeteorExecutor.execute(() -> {
-            for (Addon addon : addons) {
-                try {
-                    String cacheKey = addon.getId() + "_" + size;
-
-                    // Skip if already cached
-                    if (cache64.containsKey(cacheKey) || cache128.containsKey(cacheKey)) {
-                        continue;
-                    }
-
-                    // Load icon stream on background thread
-                    InputStream iconStream = addon.getIconStream().orElse(null);
-                    if (iconStream != null) {
-                        // Create texture on render thread
-                        Texture texture = new AddonIconTexture(iconStream, size);
-                        if (texture != null) {
-                            // Cache it
-                            mc.execute(() -> {
-                                Map<String, Texture> cache = (size == 64) ? cache64 : cache128;
-                                cache.put(cacheKey, texture);
-                            });
-                        }
-                    }
-                } catch (Exception e) {
-                    MeteorAddonsAddon.LOG.warn("Failed to preload icon for {}: {}", addon.getName(), e.getMessage());
-                }
-            }
-        });
-    }
-
-    /**
-     * Clear the cache.
+     * Clear the texture cache (for testing/debugging).
      */
     public static void clear() {
-        cache64.clear();
-        cache128.clear();
+        TEXTURE_CACHE.invalidateAll();
     }
 }

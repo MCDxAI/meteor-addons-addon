@@ -5,11 +5,11 @@
   "name": "Meteor Addons",
   "description": "Browse, install, and update Meteor Client addons directly from within the client",
   "authors": [
-    "Cope"
+    "GhostTypes"
   ],
   "contact": {
-    "homepage": "https://github.com/cope/meteor-addons-addon",
-    "sources": "https://github.com/cope/meteor-addons-addon"
+    "homepage": "https://github.com/MCDxAI/meteor-addons-addon",
+    "sources": "https://github.com/MCDxAI/meteor-addons-addon"
   },
   "icon": "assets/meteor-addons/icon.png",
   "environment": "client",

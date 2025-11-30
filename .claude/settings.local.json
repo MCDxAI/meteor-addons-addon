@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(./gradlew clean build:*)",
-      "Bash(./gradlew build:*)"
+      "Bash(./gradlew build:*)",
+      "mcp__code-search-mcp__search_files",
+      "mcp__code-search-mcp__add_workspace",
+      "mcp__gradle-mcp-server__gradle_execute",
+      "mcp__gradle-mcp-server__gradle_build"
     ],
     "deny": [],
     "ask": []

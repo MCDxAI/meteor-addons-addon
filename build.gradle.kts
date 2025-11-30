@@ -37,6 +37,10 @@ dependencies {
     modImplementation(libs.gson)
     include(libs.gson)
 
+    // Guava for caching
+    modImplementation(libs.guava)
+    include(libs.guava)
+
     // Testing
     testImplementation(libs.junitApi)
     testRuntimeOnly(libs.junitEngine)

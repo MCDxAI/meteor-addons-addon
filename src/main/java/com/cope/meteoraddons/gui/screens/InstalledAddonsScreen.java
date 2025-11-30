@@ -39,11 +39,11 @@ public class InstalledAddonsScreen extends WindowScreen {
             for (int i = 0; i < addons.size(); i++) {
                 Addon addon = addons.get(i);
 
-                // Add list item (no install button for installed addons)
+                // Add list item (no install button or checkmark for installed addons)
                 addonList.add(new WAddonListItem(addon, a -> {
                     // Open detail screen on click
                     mc.setScreen(new AddonDetailScreen(theme, addon, this));
-                }, false)).expandX();
+                }, false, false)).expandX();
 
                 // Add separator between items (except after last)
                 if (i < addons.size() - 1) {

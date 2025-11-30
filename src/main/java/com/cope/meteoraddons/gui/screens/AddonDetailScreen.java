@@ -35,7 +35,7 @@ public class AddonDetailScreen extends WindowScreen {
     @Override
     public void initWidgets() {
         // Icon
-        Texture iconTexture = IconCache.get128(addon);
+        Texture iconTexture = IconCache.get(addon);
         add(theme.texture(96, 96, 0, iconTexture)).centerX();
 
         // Name

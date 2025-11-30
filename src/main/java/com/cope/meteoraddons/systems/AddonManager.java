@@ -174,7 +174,6 @@ public class AddonManager extends System<AddonManager> {
         });
     }
 
-
     /**
      * Download and install an addon.
      *

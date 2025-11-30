@@ -22,11 +22,13 @@ public class WAddonListItem extends WTable {
     private final Addon addon;
     private final Consumer<Addon> onAction;
     private final boolean showInstallButton;
+    private final boolean showInstalledIndicator;
 
-    public WAddonListItem(Addon addon, Consumer<Addon> onAction, boolean showInstallButton) {
+    public WAddonListItem(Addon addon, Consumer<Addon> onAction, boolean showInstallButton, boolean showInstalledIndicator) {
         this.addon = addon;
         this.onAction = onAction;
         this.showInstallButton = showInstallButton;
+        this.showInstalledIndicator = showInstalledIndicator;
     }
 
     /**
@@ -42,26 +44,14 @@ public class WAddonListItem extends WTable {
 
     @Override
     public void init() {
-        // Left side: Icon with optional installed indicator
-        WHorizontalList iconRow = add(theme.horizontalList()).widget();
-
-        // Main icon (128x128)
-        Texture iconTexture = IconCache.get128(addon);
-        iconRow.add(theme.texture(128, 128, 0, iconTexture)).pad(8);
-
-        // Add installed indicator badge if installed
-        if (addon.isInstalled()) {
-            Texture installedIcon = IconCache.getInstalledIndicator();
-            if (installedIcon != null) {
-                // Add indicator next to icon (32x32 badge)
-                iconRow.add(theme.texture(32, 32, 0, installedIcon)).padRight(8);
-            }
-        }
+        // Left side: 128x128 icon
+        Texture iconTexture = IconCache.get(addon);
+        add(theme.texture(128, 128, 0, iconTexture)).pad(8);
 
         // Right side: Details
         WVerticalList details = add(theme.verticalList()).expandX().widget();
 
-        // Title line with authors
+        // Title line with authors and optional installed indicator
         WHorizontalList titleLine = details.add(theme.horizontalList()).expandX().widget();
         titleLine.add(theme.label(addon.getName(), true)).expandWidgetX();
 
@@ -75,6 +65,14 @@ public class WAddonListItem extends WTable {
                         .expandWidgetX().widget().color(theme.textSecondaryColor());
                 }
                 titleLine.add(theme.label(authors.get(i))).expandWidgetX();
+            }
+        }
+
+        // Add installed indicator after authors if enabled and installed
+        if (showInstalledIndicator && addon.isInstalled()) {
+            Texture installedIcon = IconCache.getInstalledIndicator();
+            if (installedIcon != null) {
+                titleLine.add(theme.texture(32, 32, 0, installedIcon)).padLeft(4);
             }
         }
 

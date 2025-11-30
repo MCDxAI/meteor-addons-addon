@@ -59,10 +59,6 @@ public class BrowseAddonsScreen extends WindowScreen {
 
         List<Addon> addons = manager.getOnlineAddons();
 
-        // Preload icons in background to prevent lag
-        IconCache.preloadIcons(addons, 64);
-        IconCache.preloadIcons(addons, 128);
-
         // Show addon count
         header.add(theme.label(addons.size() + " addons available")).centerX();
 
@@ -126,7 +122,7 @@ public class BrowseAddonsScreen extends WindowScreen {
 
             list.add(new WAddonListItem(addon, a -> {
                 mc.setScreen(new AddonDetailScreen(theme, a, this));
-            }, true)).expandX();
+            }, true, true)).expandX();
 
             // Add separator between items (except after last)
             if (i < addons.size() - 1) {

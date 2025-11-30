@@ -8,43 +8,27 @@ import net.minecraft.client.texture.NativeImage;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 /**
- * Texture for addon icons loaded from cached PNG files or input streams.
+ * Texture for addon icons loaded from input streams.
  * Extends Meteor's Texture class for proper rendering in GUI.
- * Supports both 48x48 (grid) and 128x128 (list) sizes.
+ * Default size is 128x128 (for main icons), with support for custom sizes (e.g., 32x32 for badges).
  */
 public class AddonIconTexture extends Texture {
     /**
-     * Create an addon icon texture from a cached file.
+     * Create an addon icon texture from an input stream (128x128).
      *
-     * @param iconPath path to the cached icon PNG file
-     * @param size target size (48 or 128)
+     * @param inputStream stream containing icon image data
      */
-    public AddonIconTexture(Path iconPath, int size) {
-        super(size, size, TextureFormat.RGBA8, FilterMode.LINEAR, FilterMode.LINEAR);
-
-        if (!Files.exists(iconPath)) {
-            MeteorAddonsAddon.LOG.warn("Icon file does not exist: {}", iconPath);
-            createDefaultIcon(size);
-            return;
-        }
-
-        try (InputStream inputStream = Files.newInputStream(iconPath)) {
-            loadFromStream(inputStream, size);
-        } catch (IOException e) {
-            MeteorAddonsAddon.LOG.error("Failed to load icon from {}: {}", iconPath, e.getMessage());
-            createDefaultIcon(size);
-        }
+    public AddonIconTexture(InputStream inputStream) {
+        this(inputStream, 128);
     }
 
     /**
-     * Create an addon icon texture from an input stream.
+     * Create an addon icon texture from an input stream with custom size.
      *
      * @param inputStream stream containing icon image data
-     * @param size target size (48 or 128)
+     * @param size target size (width and height)
      */
     public AddonIconTexture(InputStream inputStream, int size) {
         super(size, size, TextureFormat.RGBA8, FilterMode.LINEAR, FilterMode.LINEAR);
@@ -55,16 +39,6 @@ public class AddonIconTexture extends Texture {
             MeteorAddonsAddon.LOG.error("Failed to load icon from stream: {}", e.getMessage());
             createDefaultIcon(size);
         }
-    }
-
-    /**
-     * Create a default/placeholder icon texture.
-     *
-     * @param size target size (48 or 128)
-     */
-    public AddonIconTexture(int size) {
-        super(size, size, TextureFormat.RGBA8, FilterMode.LINEAR, FilterMode.LINEAR);
-        createDefaultIcon(size);
     }
 
     /**
