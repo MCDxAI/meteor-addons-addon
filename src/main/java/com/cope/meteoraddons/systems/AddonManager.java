@@ -39,7 +39,6 @@ public class AddonManager extends System<AddonManager> {
     private List<Addon> installedAddons = new ArrayList<>();
     private List<String> installedAddonNames = new ArrayList<>();
     private boolean isLoading = false;
-    private boolean isInitialized = false;
     private String lastError = null;
 
     public AddonManager() {
@@ -50,16 +49,8 @@ public class AddonManager extends System<AddonManager> {
         return Systems.get(AddonManager.class);
     }
 
-    /**
-     * Initialize addon manager. Safe to call multiple times.
-     */
+    @Override
     public void init() {
-        if (isInitialized) {
-            MeteorAddonsAddon.LOG.warn("AddonManager already initialized, skipping duplicate init");
-            return;
-        }
-
-        isInitialized = true;
         scanInstalledAddons();
         fetchAddonMetadata();
     }

@@ -31,8 +31,7 @@ public class MeteorAddonsAddon extends MeteorAddon {
         Tabs.add(new AddonsTab());
         LOG.info("Addons tab registered");
 
-        AddonManager.get().init();
-        LOG.info("Started fetching addon metadata");
+
 
         LOG.info("Meteor Addons Addon initialized successfully");
     }
