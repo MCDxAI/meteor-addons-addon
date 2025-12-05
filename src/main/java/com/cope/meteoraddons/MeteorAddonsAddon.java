@@ -11,12 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Meteor Addons Addon - Entry Point
- *
- * Enables browsing, installing, and updating Meteor Client addons directly from within the client.
- * Fetches addon metadata from the meteor-addon-scanner repository.
- *
- * @author Cope
+ * Entry point for Meteor Addons addon.
+ * Enables browsing, installing, and updating Meteor Client addons from within the client.
  */
 public class MeteorAddonsAddon extends MeteorAddon {
     public static final Logger LOG = LoggerFactory.getLogger("Meteor Addons");
@@ -25,20 +21,16 @@ public class MeteorAddonsAddon extends MeteorAddon {
     public void onInitialize() {
         LOG.info("Initializing Meteor Addons Addon");
 
-        // Initialize IconPreloadSystem (handles icon lifecycle)
         IconPreloadSystem iconPreloadSystem = new IconPreloadSystem();
         Systems.add(iconPreloadSystem);
         LOG.info("IconPreloadSystem registered");
 
-        // Initialize AddonManager system (manages addon state, downloads, updates)
         Systems.add(new AddonManager());
         LOG.info("AddonManager system initialized");
 
-        // Register Addons tab in Meteor GUI
         Tabs.add(new AddonsTab());
         LOG.info("Addons tab registered");
 
-        // Start fetching addon metadata on a background thread
         AddonManager.get().init();
         LOG.info("Started fetching addon metadata");
 
@@ -47,7 +39,6 @@ public class MeteorAddonsAddon extends MeteorAddon {
 
     @Override
     public void onRegisterCategories() {
-        // No custom module categories needed for this addon
     }
 
     @Override

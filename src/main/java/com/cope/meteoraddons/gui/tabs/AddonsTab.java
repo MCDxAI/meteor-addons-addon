@@ -13,8 +13,7 @@ import net.minecraft.client.gui.screen.Screen;
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 
 /**
- * GUI tab for browsing and managing Meteor addons.
- * Provides navigation between Installed and Browse screens.
+ * Main GUI tab for browsing and managing addons.
  */
 public class AddonsTab extends Tab {
     public AddonsTab() {

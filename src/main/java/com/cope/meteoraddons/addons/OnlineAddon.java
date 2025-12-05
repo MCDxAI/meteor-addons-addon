@@ -11,8 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Wrapper for online addon metadata from the addon scanner.
- * Delegates to AddonMetadata and adds installed status checking.
+ * Online addon wrapper for scanner metadata.
  */
 public class OnlineAddon implements Addon {
     private final AddonMetadata metadata;
@@ -32,7 +31,6 @@ public class OnlineAddon implements Addon {
 
     @Override
     public String getId() {
-        // Use name as ID for online addons (metadata doesn't have a separate ID field)
         return metadata.name.toLowerCase().replace(" ", "-");
     }
 
@@ -49,7 +47,6 @@ public class OnlineAddon implements Addon {
 
     @Override
     public String getVersion() {
-        // Try to extract version from download URL or use mc_version
         if (metadata.mc_version != null) {
             return metadata.mc_version;
         }

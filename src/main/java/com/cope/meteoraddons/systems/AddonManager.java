@@ -27,8 +27,7 @@ import java.util.stream.Collectors;
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 
 /**
- * Manages Meteor addon metadata, installation, and updates.
- * Fetches addon data from the meteor-addon-scanner repository on startup.
+ * Manages addon metadata, installation, and updates.
  */
 public class AddonManager extends System<AddonManager> {
     private static final String ADDON_SCANNER_URL =
@@ -52,9 +51,7 @@ public class AddonManager extends System<AddonManager> {
     }
 
     /**
-     * Initialize the addon manager.
-     * Should be called on addon startup to fetch metadata.
-     * Safe to call multiple times - will only initialize once.
+     * Initialize addon manager. Safe to call multiple times.
      */
     public void init() {
         if (isInitialized) {
@@ -67,20 +64,13 @@ public class AddonManager extends System<AddonManager> {
         fetchAddonMetadata();
     }
 
-    /**
-     * Scan for installed Meteor addons.
-     * Looks for all mods with the "meteor" entrypoint.
-     */
     private void scanInstalledAddons() {
         installedAddons.clear();
         installedAddonNames.clear();
 
         for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
-            // Check if this mod has a meteor entrypoint using FabricLoader
             try {
-                // Try to get meteor entrypoints - if it succeeds, this is a meteor addon
                 if (!FabricLoader.getInstance().getEntrypointContainers("meteor", Object.class).isEmpty()) {
-                    // Check if this specific mod provides the entrypoint
                     boolean isMeteorAddon = FabricLoader.getInstance().getEntrypointContainers("meteor", Object.class)
                         .stream()
                         .anyMatch(container -> container.getProvider().getMetadata().getId().equals(mod.getMetadata().getId()));
@@ -95,7 +85,6 @@ public class AddonManager extends System<AddonManager> {
                     }
                 }
             } catch (Exception e) {
-                // Not a meteor addon, skip
             }
         }
 
@@ -116,9 +105,7 @@ public class AddonManager extends System<AddonManager> {
     }
 
     /**
-     * Fetch addon metadata from the scanner repository.
-     * Runs asynchronously on a background thread.
-     * After fetching, filters addons by current Minecraft version and downloads icons.
+     * Fetch addon metadata asynchronously from scanner repository.
      */
     public void fetchAddonMetadata() {
         if (isLoading) {
@@ -133,30 +120,26 @@ public class AddonManager extends System<AddonManager> {
             try {
                 MeteorAddonsAddon.LOG.info("Fetching addon metadata from: {}", ADDON_SCANNER_URL);
 
-                // Download JSON
                 String jsonResponse = HttpClient.downloadString(ADDON_SCANNER_URL);
 
-                // Parse JSON into list
                 Type listType = new TypeToken<List<AddonMetadata>>(){}.getType();
                 availableAddons = gson.fromJson(jsonResponse, listType);
 
                 MeteorAddonsAddon.LOG.info("Fetched {} addons from scanner", availableAddons.size());
 
-                // Filter by current Minecraft version, verified status, and remove duplicates by name
                 String currentVersion = VersionUtil.getCurrentMinecraftVersion();
                 List<AddonMetadata> filteredMetadata = availableAddons.stream()
                     .filter(AddonMetadata::supportsCurrentVersion)
-                    .filter(addon -> addon.verified) // Only show verified addons
+                    .filter(addon -> addon.verified)
                     .collect(Collectors.toMap(
-                        addon -> addon.name, // Key: addon name
-                        addon -> addon,      // Value: addon object
-                        (existing, replacement) -> existing // Keep first occurrence on duplicate
+                        addon -> addon.name,
+                        addon -> addon,
+                        (existing, replacement) -> existing
                     ))
                     .values()
                     .stream()
                     .collect(Collectors.toList());
 
-                // Wrap in OnlineAddon
                 onlineAddons = filteredMetadata.stream()
                     .map(OnlineAddon::new)
                     .collect(Collectors.toList());
@@ -164,7 +147,6 @@ public class AddonManager extends System<AddonManager> {
                 MeteorAddonsAddon.LOG.info("Filtered to {} addons for Minecraft {}",
                     onlineAddons.size(), currentVersion);
 
-                // Preload icon data asynchronously
                 preloadIconsAsync(filteredMetadata);
 
             } catch (IOException e) {
@@ -179,10 +161,6 @@ public class AddonManager extends System<AddonManager> {
         });
     }
 
-    /**
-     * Download all addon icons asynchronously (background thread).
-     * Icons are cached in IconPreloadSystem for conversion to textures on next reload.
-     */
     private void preloadIconsAsync(List<AddonMetadata> addons) {
         MeteorAddonsAddon.LOG.info("Starting async icon download for {} addons", addons.size());
 
@@ -211,20 +189,12 @@ public class AddonManager extends System<AddonManager> {
         MeteorAddonsAddon.LOG.info("Icon download complete: {} success, {} failed",
             successCount, failureCount);
 
-        // Convert cached PNG data to GPU textures on render thread
-        // We don't need a full resource reload - just process our icon cache
         mc.execute(() -> {
             MeteorAddonsAddon.LOG.info("Converting downloaded icons to GPU textures");
             IconPreloadSystem.get().reload(mc.getResourceManager());
         });
     }
 
-    /**
-     * Download and install an addon.
-     *
-     * @param addon addon to install
-     * @return true if download succeeded
-     */
     public boolean downloadAddon(OnlineAddon addon) {
         String[] downloadUrls = addon.getMetadata().getDownloadUrls();
 
@@ -234,18 +204,15 @@ public class AddonManager extends System<AddonManager> {
         }
 
         try {
-            // Get mods folder path (parent of meteor-client folder)
             Path meteorFolder = MeteorClient.FOLDER.toPath();
             Path modsFolder = meteorFolder.getParent().resolve("mods");
 
-            // Determine filename from URL
             String url = downloadUrls[0];
             String fileName = url.substring(url.lastIndexOf('/') + 1);
             Path destPath = modsFolder.resolve(fileName);
 
             MeteorAddonsAddon.LOG.info("Downloading addon {} to {}", addon.getName(), destPath);
 
-            // Download with fallback URLs
             String successUrl = HttpClient.downloadFileWithFallback(downloadUrls, destPath);
 
             if (successUrl != null) {
@@ -265,48 +232,22 @@ public class AddonManager extends System<AddonManager> {
         }
     }
 
-    /**
-     * Get the list of online addons compatible with the current Minecraft version.
-     *
-     * @return list of online addons
-     */
     public List<Addon> getOnlineAddons() {
         return onlineAddons;
     }
 
-    /**
-     * Get the list of installed Meteor addons.
-     *
-     * @return list of installed addons
-     */
     public List<Addon> getInstalledAddons() {
         return installedAddons;
     }
 
-    /**
-     * Check if addon metadata is currently being loaded.
-     *
-     * @return true if loading
-     */
     public boolean isLoading() {
         return isLoading;
     }
 
-    /**
-     * Get the last error message.
-     *
-     * @return error message or null
-     */
     public String getLastError() {
         return lastError;
     }
 
-    /**
-     * Check if an addon is installed.
-     *
-     * @param addonName addon name to check
-     * @return true if installed
-     */
     public boolean isInstalled(String addonName) {
         return installedAddonNames.contains(addonName);
     }

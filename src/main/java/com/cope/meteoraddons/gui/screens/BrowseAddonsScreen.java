@@ -21,9 +21,6 @@ import java.util.List;
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 import static meteordevelopment.meteorclient.utils.Utils.getWindowWidth;
 
-/**
- * Screen for browsing and downloading online addons.
- */
 public class BrowseAddonsScreen extends WindowScreen {
     private static final int CARDS_PER_ROW = 4;
     private boolean isGridView = false;
@@ -36,14 +33,12 @@ public class BrowseAddonsScreen extends WindowScreen {
     public void initWidgets() {
         AddonManager manager = AddonManager.get();
 
-        // Header
         WHorizontalList header = add(theme.horizontalList()).expandX().widget();
         header.add(theme.label("Available Addons")).expandX();
         header.add(theme.label("MC " + VersionUtil.getCurrentMinecraftVersion()).color(theme.textSecondaryColor()));
 
         add(theme.horizontalSeparator()).expandX();
 
-        // Loading / Error
         if (manager.isLoading()) {
             add(theme.label("Loading addons...")).centerX();
             return;
@@ -65,25 +60,18 @@ public class BrowseAddonsScreen extends WindowScreen {
             return;
         }
 
-        // Toolbar
         WHorizontalList toolbar = add(theme.horizontalList()).expandX().widget();
         toolbar.add(theme.label(addons.size() + " addons"));
-        
-        // Spacer using empty expanding label or just layout properties
-        // Meteor doesn't have a spacer widget usually, but expanding a label works or expanding the container.
-        // We'll rely on the previous label expanding? No, WLabel auto-sizes. 
-        // We can add a dummy widget that expands.
         toolbar.add(theme.horizontalList()).expandX();
-        
+
         WButton listBtn = toolbar.add(theme.button(isGridView ? "List" : "[List]")).widget();
         listBtn.action = () -> { isGridView = false; reload(); };
-        
+
         WButton gridBtn = toolbar.add(theme.button(isGridView ? "[Grid]" : "Grid")).widget();
         gridBtn.action = () -> { isGridView = true; reload(); };
 
         add(theme.horizontalSeparator()).expandX();
 
-        // Content
         if (isGridView) {
             initGridView(addons);
         } else {

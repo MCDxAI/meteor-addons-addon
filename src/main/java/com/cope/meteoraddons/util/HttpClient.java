@@ -14,8 +14,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.concurrent.TimeUnit;
 
 /**
- * HTTP client utility for downloading addon metadata and files.
- * Uses OkHttp for reliable, efficient HTTP operations.
+ * HTTP client for downloading addon metadata and files using OkHttp.
  */
 public class HttpClient {
     private static final OkHttpClient client = new OkHttpClient.Builder()
@@ -24,13 +23,6 @@ public class HttpClient {
         .writeTimeout(30, TimeUnit.SECONDS)
         .build();
 
-    /**
-     * Download a URL's content as a string.
-     *
-     * @param url URL to download from
-     * @return response body as string
-     * @throws IOException if the request fails
-     */
     public static String downloadString(String url) throws IOException {
         Request request = new Request.Builder()
             .url(url)
@@ -50,13 +42,6 @@ public class HttpClient {
         }
     }
 
-    /**
-     * Download a URL's content as a byte array.
-     *
-     * @param url URL to download from
-     * @return response body as byte array
-     * @throws IOException if the request fails
-     */
     public static byte[] downloadBytes(String url) throws IOException {
         Request request = new Request.Builder()
             .url(url)
@@ -76,14 +61,6 @@ public class HttpClient {
         }
     }
 
-    /**
-     * Download a file from a URL to a local path.
-     * Creates parent directories if they don't exist.
-     *
-     * @param url      URL to download from
-     * @param destPath destination file path
-     * @throws IOException if the download or file write fails
-     */
     public static void downloadFile(String url, Path destPath) throws IOException {
         MeteorAddonsAddon.LOG.info("Downloading file from: {}", url);
 
@@ -101,31 +78,20 @@ public class HttpClient {
                 throw new IOException("Response body is null");
             }
 
-            // Create parent directories if needed
             Files.createDirectories(destPath.getParent());
 
-            // Download to temp file first, then atomic move
             Path tempPath = destPath.resolveSibling(destPath.getFileName() + ".tmp");
 
             try (InputStream inputStream = body.byteStream()) {
                 Files.copy(inputStream, tempPath, StandardCopyOption.REPLACE_EXISTING);
             }
 
-            // Atomic move to final destination
             Files.move(tempPath, destPath, StandardCopyOption.REPLACE_EXISTING);
 
             MeteorAddonsAddon.LOG.info("Successfully downloaded to: {}", destPath);
         }
     }
 
-    /**
-     * Download a file with fallback URLs.
-     * Tries each URL in order until one succeeds.
-     *
-     * @param urls     list of URLs to try (in order)
-     * @param destPath destination file path
-     * @return the URL that succeeded, or null if all failed
-     */
     public static String downloadFileWithFallback(String[] urls, Path destPath) {
         if (urls == null || urls.length == 0) {
             MeteorAddonsAddon.LOG.warn("No URLs provided for download");

@@ -11,8 +11,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Represents an installed Meteor addon loaded by Fabric.
- * Wraps Fabric's ModContainer to provide addon interface.
+ * Installed Meteor addon wrapper for Fabric's ModContainer.
  */
 public class InstalledAddon implements Addon {
     private final ModContainer modContainer;
@@ -52,7 +51,6 @@ public class InstalledAddon implements Addon {
 
     @Override
     public Optional<InputStream> getIconStream() throws IOException {
-        // Try multiple icon paths in order
         String[] iconPaths = {
             metadata.getIconPath(128).orElse(null),
             metadata.getIconPath(64).orElse(null),
@@ -70,7 +68,6 @@ public class InstalledAddon implements Addon {
                     InputStream stream = java.nio.file.Files.newInputStream(pathOpt.get());
                     return Optional.of(stream);
                 } catch (IOException e) {
-                    // Try next path
                 }
             }
         }
@@ -80,7 +77,6 @@ public class InstalledAddon implements Addon {
 
     @Override
     public Optional<String> getGithubUrl() {
-        // Try to find GitHub URL in contact info
         return metadata.getContact().get("sources")
             .or(() -> metadata.getContact().get("homepage"))
             .filter(url -> url.contains("github.com"));
@@ -88,7 +84,6 @@ public class InstalledAddon implements Addon {
 
     @Override
     public Optional<String> getDiscordUrl() {
-        // Try to find Discord URL in contact info
         return metadata.getContact().get("discord")
             .or(() -> metadata.getContact().get("issues"))
             .filter(url -> url.contains("discord"));
@@ -101,7 +96,7 @@ public class InstalledAddon implements Addon {
 
     @Override
     public boolean isInstalled() {
-        return true; // Always true for installed addons
+        return true;
     }
 
     public ModContainer getModContainer() {

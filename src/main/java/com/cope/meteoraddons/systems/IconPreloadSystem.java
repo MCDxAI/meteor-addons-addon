@@ -18,28 +18,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Manages preloading of addon icons during resource reload phase.
- *
- * ARCHITECTURE:
- * - HTTP downloads fill iconDataCache (background thread)
- * - reload() converts to GPU textures (render thread, during loading screen)
- * - Widgets access via instant lookup (render thread, no blocking)
- *
- * THREAD SAFETY:
- * - iconDataCache: ConcurrentHashMap (thread-safe for HTTP writes)
- * - textureRegistry: Only accessed on render thread (no sync needed)
+ * Manages addon icon preloading during resource reload.
+ * HTTP downloads fill iconDataCache (background), reload() converts to GPU textures (render thread).
+ * Thread-safe: iconDataCache uses ConcurrentHashMap, textureRegistry is render-thread only.
  */
 public class IconPreloadSystem extends System<IconPreloadSystem> implements SynchronousResourceReloader {
-    // Raw PNG data from HTTP downloads (filled asynchronously)
     private final Map<String, byte[]> iconDataCache = new ConcurrentHashMap<>();
-
-    // GPU textures created during reload() (render thread only)
     private final Map<String, Texture> textureRegistry = new ConcurrentHashMap<>();
-
-    // Default fallback texture (created lazily, shared instance)
     private Texture defaultTexture;
-
-    // Installed indicator badge (created lazily)
     private Texture installedIndicator;
 
     public IconPreloadSystem() {
@@ -51,11 +37,7 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
     }
 
     /**
-     * Cache icon data from HTTP download (called from background thread).
-     * Safe to call before reload() - data will be converted to textures on next reload.
-     *
-     * @param addonId unique addon identifier
-     * @param pngData raw PNG bytes
+     * Cache icon data from HTTP download (background thread safe).
      */
     public void cacheIconData(String addonId, byte[] pngData) {
         if (pngData == null || pngData.length == 0) {
@@ -68,21 +50,12 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
     }
 
     /**
-     * Get texture for addon (instant lookup, no blocking).
-     * MUST be called from render thread.
-     *
-     * @param addonId addon identifier
-     * @return texture or null if not found (caller should use default)
+     * Get texture for addon (instant lookup, render thread only).
      */
     public Texture getTexture(String addonId) {
         return textureRegistry.get(addonId);
     }
 
-    /**
-     * Get the default fallback texture.
-     *
-     * @return default gray texture
-     */
     public Texture getDefaultTexture() {
         if (defaultTexture == null) {
             defaultTexture = createDefaultTexture(128);
@@ -91,15 +64,9 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
     }
 
     /**
-     * Load and cache texture from an InputStream (for installed addons with JAR icons).
-     * This allows installed addons to use their embedded icons.
-     *
-     * @param addonId addon identifier
-     * @param iconStream input stream of icon PNG data
-     * @return texture or default fallback
+     * Load texture from InputStream for installed addons with embedded JAR icons.
      */
     public Texture loadTextureFromStream(String addonId, InputStream iconStream) {
-        // Check if already loaded
         Texture existing = textureRegistry.get(addonId);
         if (existing != null) {
             return existing;
@@ -122,11 +89,6 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
         }
     }
 
-    /**
-     * Get installed indicator badge texture.
-     *
-     * @return 32x32 green checkmark texture
-     */
     public Texture getInstalledIndicator() {
         if (installedIndicator == null) {
             try {
@@ -151,21 +113,12 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
     }
 
     /**
-     * SynchronousResourceReloader implementation.
-     * Called by Minecraft on render thread during resource load phase.
-     *
-     * WHEN CALLED:
-     * - Game startup (after mods load)
-     * - F3+T resource reload
-     * - Resource pack change
-     *
-     * THREAD: Always render thread (guaranteed by Minecraft)
+     * SynchronousResourceReloader: called on render thread during resource load.
      */
     @Override
     public void reload(ResourceManager manager) {
         MeteorAddonsAddon.LOG.info("Starting icon preload: {} cached icons", iconDataCache.size());
 
-        // Clear old textures to prevent GPU memory leak
         for (Texture oldTexture : textureRegistry.values()) {
             if (oldTexture != null && oldTexture != defaultTexture) {
                 oldTexture.close();
@@ -173,7 +126,6 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
         }
         textureRegistry.clear();
 
-        // Convert cached PNG data to GPU textures
         int successCount = 0;
         int failureCount = 0;
 
@@ -199,14 +151,12 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
     }
 
     /**
-     * Create Meteor Texture from NativeImage.
-     * Handles resizing and ABGR→RGBA color conversion.
+     * Create Texture from NativeImage with resizing and ABGR→RGBA conversion.
      */
     @SuppressWarnings("deprecation")
     private Texture createTextureFromNativeImage(NativeImage sourceImage, int targetSize) {
         NativeImage image;
 
-        // Resize if needed
         if (sourceImage.getWidth() != targetSize || sourceImage.getHeight() != targetSize) {
             NativeImage resized = new NativeImage(targetSize, targetSize, false);
             sourceImage.resizeSubRectTo(0, 0, sourceImage.getWidth(), sourceImage.getHeight(), resized);
@@ -215,34 +165,27 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
             image = sourceImage;
         }
 
-        // Create texture
         Texture texture = new Texture(targetSize, targetSize, TextureFormat.RGBA8, FilterMode.LINEAR, FilterMode.LINEAR);
 
-        // Convert ABGR pixels to RGBA bytes
         int[] pixels = image.makePixelArray();
         byte[] bytes = new byte[targetSize * targetSize * 4];
 
         for (int i = 0; i < pixels.length; i++) {
             int color = pixels[i];
-            bytes[i * 4]     = (byte) ((color >> 16) & 0xFF); // R
-            bytes[i * 4 + 1] = (byte) ((color >> 8) & 0xFF);  // G
-            bytes[i * 4 + 2] = (byte) (color & 0xFF);         // B
-            bytes[i * 4 + 3] = (byte) ((color >> 24) & 0xFF); // A
+            bytes[i * 4]     = (byte) ((color >> 16) & 0xFF);
+            bytes[i * 4 + 1] = (byte) ((color >> 8) & 0xFF);
+            bytes[i * 4 + 2] = (byte) (color & 0xFF);
+            bytes[i * 4 + 3] = (byte) ((color >> 24) & 0xFF);
         }
 
         texture.upload(bytes);
 
-        // Clean up resized image if we created one
         if (image != sourceImage) {
             image.close();
         }
 
         return texture;
     }
-
-    /**
-     * Create simple gray fallback texture.
-     */
     private Texture createDefaultTexture(int size) {
         Texture texture = new Texture(size, size, TextureFormat.RGBA8, FilterMode.LINEAR, FilterMode.LINEAR);
 
@@ -258,19 +201,13 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
         return texture;
     }
 
-    /**
-     * Clear all cached data (for testing/debugging).
-     */
     public void clearCache() {
         iconDataCache.clear();
-
-        // Textures will be cleaned on next reload()
         MeteorAddonsAddon.LOG.info("Icon cache cleared");
     }
 
     @Override
     public NbtCompound toTag() {
-        // No persistent state needed
         return new NbtCompound();
     }
 
