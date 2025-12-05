@@ -1,6 +1,7 @@
 package com.cope.meteoraddons.systems;
 
 import com.cope.meteoraddons.MeteorAddonsAddon;
+import com.cope.meteoraddons.config.IconSizeConfig;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.TextureFormat;
@@ -58,7 +59,7 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
 
     public Texture getDefaultTexture() {
         if (defaultTexture == null) {
-            defaultTexture = createDefaultTexture(128);
+            defaultTexture = createDefaultTexture(IconSizeConfig.ADDON_ICON_SIZE);
         }
         return defaultTexture;
     }
@@ -75,7 +76,7 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
         try {
             byte[] iconData = iconStream.readAllBytes();
             NativeImage image = NativeImage.read(new ByteArrayInputStream(iconData));
-            Texture texture = createTextureFromNativeImage(image, 128);
+            Texture texture = createTextureFromNativeImage(image, IconSizeConfig.ADDON_ICON_SIZE);
             textureRegistry.put(addonId, texture);
             image.close();
             MeteorAddonsAddon.LOG.debug("Loaded texture from stream for {}", addonId);
@@ -83,7 +84,7 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
         } catch (Exception e) {
             MeteorAddonsAddon.LOG.warn("Failed to load texture from stream for {}: {}", addonId, e.getMessage());
             if (defaultTexture == null) {
-                defaultTexture = createDefaultTexture(128);
+                defaultTexture = createDefaultTexture(IconSizeConfig.ADDON_ICON_SIZE);
             }
             return defaultTexture;
         }
@@ -98,15 +99,15 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
                 if (stream != null) {
                     byte[] data = stream.readAllBytes();
                     NativeImage image = NativeImage.read(new ByteArrayInputStream(data));
-                    installedIndicator = createTextureFromNativeImage(image, 32);
+                    installedIndicator = createTextureFromNativeImage(image, IconSizeConfig.INSTALLED_INDICATOR_SIZE);
                     image.close();
                 } else {
                     MeteorAddonsAddon.LOG.warn("Installed indicator asset not found, using default");
-                    installedIndicator = createDefaultTexture(32);
+                    installedIndicator = createDefaultTexture(IconSizeConfig.INSTALLED_INDICATOR_SIZE);
                 }
             } catch (Exception e) {
                 MeteorAddonsAddon.LOG.error("Failed to load installed indicator", e);
-                installedIndicator = createDefaultTexture(32);
+                installedIndicator = createDefaultTexture(IconSizeConfig.INSTALLED_INDICATOR_SIZE);
             }
         }
         return installedIndicator;
@@ -135,7 +136,7 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
 
             try {
                 NativeImage image = NativeImage.read(new ByteArrayInputStream(pngData));
-                Texture texture = createTextureFromNativeImage(image, 128);
+                Texture texture = createTextureFromNativeImage(image, IconSizeConfig.ADDON_ICON_SIZE);
                 textureRegistry.put(addonId, texture);
                 image.close();
                 successCount++;

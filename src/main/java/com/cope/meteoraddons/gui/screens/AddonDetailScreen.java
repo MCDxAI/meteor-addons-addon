@@ -2,6 +2,7 @@ package com.cope.meteoraddons.gui.screens;
 
 import com.cope.meteoraddons.addons.Addon;
 import com.cope.meteoraddons.addons.OnlineAddon;
+import com.cope.meteoraddons.config.IconSizeConfig;
 import com.cope.meteoraddons.models.AddonMetadata;
 import com.cope.meteoraddons.systems.AddonManager;
 import com.cope.meteoraddons.util.IconCache;
@@ -43,7 +44,7 @@ public class AddonDetailScreen extends WindowScreen {
         
         // Icon
         Texture iconTexture = IconCache.get(addon);
-        header.add(theme.texture(64, 64, 0, iconTexture)).widget();
+        header.add(theme.texture(IconSizeConfig.ADDON_ICON_SIZE, IconSizeConfig.ADDON_ICON_SIZE, 0, iconTexture)).widget();
 
         // Details (Name, Authors, Version, Verified)
         WVerticalList details = header.add(theme.verticalList()).expandX().widget();

@@ -1,6 +1,7 @@
 package com.cope.meteoraddons.gui.screens;
 
 import com.cope.meteoraddons.addons.Addon;
+import com.cope.meteoraddons.config.IconSizeConfig;
 import com.cope.meteoraddons.systems.AddonManager;
 import com.cope.meteoraddons.util.IconCache;
 import meteordevelopment.meteorclient.gui.GuiTheme;
@@ -44,9 +45,9 @@ public class InstalledAddonsScreen extends WindowScreen {
             for (int i = 0; i < addons.size(); i++) {
                 Addon addon = addons.get(i);
 
-                // Column 0: Icon (128x128)
+                // Column 0: Icon
                 Texture iconTexture = IconCache.get(addon);
-                addonList.add(theme.texture(128, 128, 0, iconTexture)).pad(8);
+                addonList.add(theme.texture(IconSizeConfig.ADDON_ICON_SIZE, IconSizeConfig.ADDON_ICON_SIZE, 0, iconTexture)).pad(8);
 
                 // Column 1: Details (expanding)
                 WVerticalList details = addonList.add(theme.verticalList()).expandCellX().widget();

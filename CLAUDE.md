@@ -23,6 +23,51 @@ This is a **Meteor Client addon** that provides an in-game GUI for browsing, ins
 ./gradlew clean build
 ```
 
+## Project Structure
+
+```
+src/main/java/com/cope/meteoraddons/
+├── MeteorAddonsAddon.java           # Entry point, addon initialization
+├── config/
+│   └── IconSizeConfig.java          # Centralized icon size constants
+├── systems/
+│   ├── AddonManager.java            # Core system: addon fetching, filtering, downloads
+│   └── IconPreloadSystem.java       # Icon download & GPU texture management
+├── addons/
+│   ├── Addon.java                   # Base interface for all addons
+│   ├── OnlineAddon.java             # Addon from meteor-addon-scanner API
+│   └── InstalledAddon.java          # Local addon from mods/ folder
+├── models/
+│   └── AddonMetadata.java           # JSON model for addon metadata
+├── gui/
+│   ├── tabs/
+│   │   └── AddonsTab.java           # Main tab in Meteor GUI
+│   ├── screens/
+│   │   ├── BrowseAddonsScreen.java  # Online addons browse screen
+│   │   ├── InstalledAddonsScreen.java # Installed addons screen
+│   │   └── AddonDetailScreen.java   # Detail modal for individual addon
+│   └── widgets/
+│       └── WAddonCard.java          # Grid view addon card widget
+└── util/
+    ├── IconCache.java               # Facade for instant icon lookups
+    ├── HttpClient.java              # OkHttp wrapper with fallbacks
+    ├── VersionUtil.java             # Minecraft version detection
+    └── TimeUtil.java                # Relative time formatting
+
+src/main/resources/
+├── fabric.mod.json                  # Fabric mod metadata
+└── assets/meteor-addons/
+    ├── icon.png                     # Addon icon (shown in mod menu)
+    └── installed-icon.png           # Badge overlay for installed addons
+```
+
+**Key Patterns:**
+- `config/` - Configuration constants (sizes, URLs, etc.)
+- `systems/` - Meteor Systems (singleton managers with NBT persistence)
+- `gui/` - All GUI code organized by type (tabs, screens, widgets)
+- `util/` - Utility classes with static helper methods
+- `models/` - Data classes mapping to JSON structures
+
 ## Architecture
 
 ### Threading Model (CRITICAL)
@@ -33,7 +78,7 @@ This is a **Meteor Client addon** that provides an in-game GUI for browsing, ins
 - Use `mc.execute(() -> { ... })` to schedule GUI updates back on the render thread
 - See `AddonManager.fetchAddonMetadata()` for the pattern
 
-**Icon Cache Pattern**: `IconCache` uses async texture loading - always returns immediately with a default texture, then loads the real texture in the background and triggers a UI refresh callback.
+**Icon Cache Pattern**: Icons are preloaded during startup. `IconPreloadSystem` downloads PNG bytes in background threads, then converts them to GPU textures during resource reload (render thread). `IconCache.get(addon)` returns instantly - either the cached texture or a gray placeholder.
 
 ### Systems Architecture
 
@@ -81,42 +126,67 @@ public MyWidget(GuiTheme theme, Data data) {
 
 The `theme` field is set by the framework when the widget is added to the widget tree. Never set it manually or call `init()` from the constructor.
 
+### Icon Sizing (IMPORTANT)
+
+All addon icon sizes are centralized in `IconSizeConfig.java`:
+
+```java
+public static final int ADDON_ICON_SIZE = 64;  // Change here to adjust globally
+public static final int INSTALLED_INDICATOR_SIZE = 32;
+```
+
+**All icons display at 64x64 pixels** across grid view, list view, detail screens, and installed addons. To change icon sizes:
+1. Edit `IconSizeConfig.ADDON_ICON_SIZE`
+2. Rebuild - all GUI components and texture creation automatically use the new size
+
 ### Texture Rendering
 
-For custom textures (like addon icons):
+Icon textures are managed by `IconPreloadSystem`:
 
-1. Extend `meteordevelopment.meteorclient.renderer.Texture` (NOT Minecraft's texture classes)
-2. Use `NativeImage.read()` to load images (handles any size)
-3. Resize to target dimensions using `NativeImage.resizeSubRectTo()`
-4. Convert to RGBA byte array via `makePixelArray()` and manual color conversion (ABGR → RGBA)
-5. Upload with `upload(byte[])`
+1. **Download Phase**: HTTP downloads cache raw PNG bytes (`iconDataCache`)
+2. **Resource Reload**: `reload()` converts cached PNGs to GPU textures on render thread
+3. **Texture Creation**: Uses `NativeImage.read()` → resize to `IconSizeConfig.ADDON_ICON_SIZE` → ABGR→RGBA conversion → `Texture.upload()`
+4. **Instant Lookup**: `IconCache.get(addon)` returns cached texture or default gray placeholder
 
-See `AddonIconTexture` for the complete implementation. Icons are cached at multiple sizes (64x64 for grid view, 128x128 for list view).
+See `IconPreloadSystem.createTextureFromNativeImage()` for implementation. Icons are created at a single size (64x64 by default) and used everywhere.
 
 ### Data Flow
 
-1. **Startup**: `AddonManager.init()` triggers background fetch of addons.json
-2. **Filtering**: Streams filter by MC version + verified status, deduplicate by name
-3. **Icon Caching**: IconCache loads textures asynchronously with default fallbacks
+1. **Startup**: `AddonManager.init()` triggers background fetch of addons.json and icon downloads
+2. **Icon Preload**: `IconPreloadSystem` downloads icons to byte cache, converts to textures on resource reload
+3. **Filtering**: Streams filter by MC version + verified status, deduplicate by name
 4. **GUI**: AddonsTab provides navigation to Browse/Installed screens
 5. **Details**: AddonDetailScreen modal shows full metadata + download button
 6. **Download**: `AddonManager.downloadAddon()` saves JAR to parent `mods/` folder
 
 ### Key Classes
 
+**Configuration:**
+- **IconSizeConfig**: Centralized icon size constants (`ADDON_ICON_SIZE`, `INSTALLED_INDICATOR_SIZE`)
+
+**Core Systems:**
 - **MeteorAddonsAddon**: Entry point, registers systems and tabs
 - **AddonManager**: System that manages addon state, fetching, filtering, downloading
-- **IconCache**: Async icon loading with callback-based UI refresh
+- **IconPreloadSystem**: System for async icon downloading and GPU texture creation
+- **IconCache**: Facade for instant icon texture lookups (delegates to IconPreloadSystem)
+
+**Data Models:**
 - **AddonMetadata**: JSON model with helper methods for priority fields (custom.* over regular)
+- **Addon**: Base interface for online and installed addons
+
+**GUI Screens:**
 - **AddonsTab**: Main GUI tab with navigation to Browse/Installed screens
 - **BrowseAddonsScreen**: Main screen with grid/list view of online addons
 - **InstalledAddonsScreen**: Shows locally installed Meteor addons
-- **WAddonCard**: Individual addon card widget (icon + title + button)
-- **WAddonListItem**: List view item for addons
 - **AddonDetailScreen**: Modal overlay with full addon info
-- **AddonIconTexture**: Texture implementation for resized addon icons
+
+**GUI Widgets:**
+- **WAddonCard**: Individual addon card widget for grid view (icon + title + button)
+
+**Utilities:**
 - **HttpClient**: OkHttp wrapper with fallback URL support
 - **VersionUtil**: Minecraft version detection via `SharedConstants.getGameVersion().id()`
+- **TimeUtil**: Relative time formatting for "updated 2 days ago" labels
 
 ## Version Filtering
 
@@ -145,9 +215,9 @@ The `include()` directive in build.gradle.kts bundles dependencies into the addo
 - **Fix**: Always resize images to match declared texture dimensions (e.g., 64x64)
 
 ### Icons not loading
-- **Check**: IconCache callback is set for UI refresh (`IconCache.setOnTexturesLoadedCallback()`)
-- **Check**: Network operations on background thread
-- **Check**: Texture creation on render thread via `mc.execute()`
+- **Check**: Icons downloaded during `AddonManager.fetchAddonMetadata()` background phase
+- **Check**: `IconPreloadSystem.reload()` called during resource reload to convert to textures
+- **Check**: For installed addons with JAR icons, `IconCache.get()` loads them on-demand from JAR `InputStream`
 
 ### Duplicate addons in list
 - **Fix**: Deduplication via `Collectors.toMap()` by addon name (already implemented)
@@ -211,7 +281,8 @@ The `ai_reference/` folder (git-ignored) contains complete source code for:
 - **Command implementation**: See `meteor-rejects/commands/`
 - **Event handling**: See `meteor-client/events/` and `orbit/`
 - **Settings framework**: See `meteor-client/settings/`
-- **Texture rendering**: See current `AddonIconTexture.java` implementation
+- **Texture rendering**: See `IconPreloadSystem.java` in current codebase
+- **Icon sizing**: See `IconSizeConfig.java` for centralized size constants
 
 ## Build Output
 

@@ -2,6 +2,7 @@ package com.cope.meteoraddons.gui.screens;
 
 import com.cope.meteoraddons.addons.Addon;
 import com.cope.meteoraddons.addons.OnlineAddon;
+import com.cope.meteoraddons.config.IconSizeConfig;
 import com.cope.meteoraddons.gui.widgets.WAddonCard;
 import com.cope.meteoraddons.models.AddonMetadata;
 import com.cope.meteoraddons.systems.AddonManager;
@@ -101,7 +102,7 @@ public class BrowseAddonsScreen extends WindowScreen {
             
             // Icon
             Texture icon = IconCache.get(addon);
-            row.add(theme.texture(48, 48, 0, icon)).widget(); 
+            row.add(theme.texture(IconSizeConfig.ADDON_ICON_SIZE, IconSizeConfig.ADDON_ICON_SIZE, 0, icon)).widget(); 
             
             // Details
             WVerticalList details = row.add(theme.verticalList()).expandX().widget();

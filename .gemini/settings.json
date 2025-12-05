@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "gradle-mcp-server": {
+      "command": "cmd.exe",
+      "args": [
+        "/c",
+        "cd C:\\Users\\Cope\\Documents\\GitHub\\gradle-mcp-server && npm start"
+      ]
+    },
+    "code-search-mcp": {
+      "command": "cmd.exe",
+      "args": [
+        "/c",
+        "cd C:\\Users\\Cope\\Documents\\GitHub\\code-search-mcp && node dist/index.js"
+      ]
+    }
+  }
+}

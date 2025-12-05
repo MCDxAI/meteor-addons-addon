@@ -1,6 +1,7 @@
 package com.cope.meteoraddons.gui.widgets;
 
 import com.cope.meteoraddons.addons.Addon;
+import com.cope.meteoraddons.config.IconSizeConfig;
 import com.cope.meteoraddons.util.IconCache;
 import meteordevelopment.meteorclient.gui.widgets.containers.WHorizontalList;
 import meteordevelopment.meteorclient.gui.widgets.containers.WVerticalList;
@@ -30,7 +31,7 @@ public class WAddonCard extends WVerticalList {
     @Override
     public void init() {
         Texture iconTexture = IconCache.get(addon);
-        add(theme.texture(64, 64, 0, iconTexture)).centerX();
+        add(theme.texture(IconSizeConfig.ADDON_ICON_SIZE, IconSizeConfig.ADDON_ICON_SIZE, 0, iconTexture)).centerX();
 
         WHorizontalList titleRow = add(theme.horizontalList()).centerX().widget();
         titleRow.add(theme.label(addon.getName()));
