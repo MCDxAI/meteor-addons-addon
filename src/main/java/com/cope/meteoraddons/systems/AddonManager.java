@@ -24,13 +24,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static meteordevelopment.meteorclient.MeteorClient.mc;
+
 /**
  * Manages Meteor addon metadata, installation, and updates.
  * Fetches addon data from the meteor-addon-scanner repository on startup.
  */
 public class AddonManager extends System<AddonManager> {
     private static final String ADDON_SCANNER_URL =
-        "https://raw.githubusercontent.com/cqb13/meteor-addon-scanner/refs/heads/main/addons.json";
+        "https://raw.githubusercontent.com/cqb13/meteor-addon-scanner/refs/heads/addons/addons.json";
 
     private final Gson gson = new Gson();
     private List<AddonMetadata> availableAddons = new ArrayList<>();
@@ -162,6 +164,9 @@ public class AddonManager extends System<AddonManager> {
                 MeteorAddonsAddon.LOG.info("Filtered to {} addons for Minecraft {}",
                     onlineAddons.size(), currentVersion);
 
+                // Preload icon data asynchronously
+                preloadIconsAsync(filteredMetadata);
+
             } catch (IOException e) {
                 lastError = "Network error: " + e.getMessage();
                 MeteorAddonsAddon.LOG.error("Failed to fetch addon metadata: {}", e.getMessage());
@@ -171,6 +176,46 @@ public class AddonManager extends System<AddonManager> {
             } finally {
                 isLoading = false;
             }
+        });
+    }
+
+    /**
+     * Download all addon icons asynchronously (background thread).
+     * Icons are cached in IconPreloadSystem for conversion to textures on next reload.
+     */
+    private void preloadIconsAsync(List<AddonMetadata> addons) {
+        MeteorAddonsAddon.LOG.info("Starting async icon download for {} addons", addons.size());
+
+        int successCount = 0;
+        int failureCount = 0;
+
+        for (AddonMetadata metadata : addons) {
+            String iconUrl = metadata.getIconUrl();
+            if (iconUrl == null || iconUrl.isEmpty()) {
+                failureCount++;
+                continue;
+            }
+
+            try {
+                byte[] iconData = HttpClient.downloadBytes(iconUrl);
+                String addonId = metadata.name.toLowerCase().replace(" ", "-");
+                IconPreloadSystem.get().cacheIconData(addonId, iconData);
+                successCount++;
+            } catch (IOException e) {
+                MeteorAddonsAddon.LOG.debug("Failed to download icon for {}: {}",
+                    metadata.name, e.getMessage());
+                failureCount++;
+            }
+        }
+
+        MeteorAddonsAddon.LOG.info("Icon download complete: {} success, {} failed",
+            successCount, failureCount);
+
+        // Convert cached PNG data to GPU textures on render thread
+        // We don't need a full resource reload - just process our icon cache
+        mc.execute(() -> {
+            MeteorAddonsAddon.LOG.info("Converting downloaded icons to GPU textures");
+            IconPreloadSystem.get().reload(mc.getResourceManager());
         });
     }
 

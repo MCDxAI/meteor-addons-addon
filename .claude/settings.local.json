@@ -6,7 +6,10 @@
       "mcp__code-search-mcp__search_files",
       "mcp__code-search-mcp__add_workspace",
       "mcp__gradle-mcp-server__gradle_execute",
-      "mcp__gradle-mcp-server__gradle_build"
+      "mcp__gradle-mcp-server__gradle_build",
+      "WebFetch(domain:maven.fabricmc.net)",
+      "mcp__code-search-mcp__search_text",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

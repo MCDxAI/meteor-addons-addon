@@ -44,7 +44,8 @@ public class WAddonCard extends WVerticalList {
         if (addon.isInstalled()) {
             Texture installedIcon = IconCache.getInstalledIndicator();
             if (installedIcon != null) {
-                titleRow.add(theme.texture(32, 32, 0, installedIcon)).padLeft(4);
+                double size = theme.textHeight();
+                titleRow.add(theme.texture(size, size, 0, installedIcon)).padLeft(4);
             }
         }
 

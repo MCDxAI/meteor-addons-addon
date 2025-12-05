@@ -123,6 +123,7 @@ public class AddonMetadata {
         public List<String> modules;
         public List<String> commands;
         public List<String> hud_elements;
+        public List<String> custom_screens;
         public int feature_count;
     }
 

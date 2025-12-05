@@ -2,6 +2,7 @@ package com.cope.meteoraddons;
 
 import com.cope.meteoraddons.gui.tabs.AddonsTab;
 import com.cope.meteoraddons.systems.AddonManager;
+import com.cope.meteoraddons.systems.IconPreloadSystem;
 import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
 import meteordevelopment.meteorclient.gui.tabs.Tabs;
@@ -23,6 +24,11 @@ public class MeteorAddonsAddon extends MeteorAddon {
     @Override
     public void onInitialize() {
         LOG.info("Initializing Meteor Addons Addon");
+
+        // Initialize IconPreloadSystem (handles icon lifecycle)
+        IconPreloadSystem iconPreloadSystem = new IconPreloadSystem();
+        Systems.add(iconPreloadSystem);
+        LOG.info("IconPreloadSystem registered");
 
         // Initialize AddonManager system (manages addon state, downloads, updates)
         Systems.add(new AddonManager());
