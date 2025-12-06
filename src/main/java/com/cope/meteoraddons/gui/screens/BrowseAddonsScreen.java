@@ -11,14 +11,18 @@ import com.cope.meteoraddons.util.IconCache;
 import com.cope.meteoraddons.util.VersionUtil;
 import meteordevelopment.meteorclient.gui.GuiTheme;
 import meteordevelopment.meteorclient.gui.WindowScreen;
+import meteordevelopment.meteorclient.gui.widgets.containers.WContainer;
 import meteordevelopment.meteorclient.gui.widgets.containers.WHorizontalList;
 import meteordevelopment.meteorclient.gui.widgets.containers.WTable;
 import meteordevelopment.meteorclient.gui.widgets.containers.WVerticalList;
+import meteordevelopment.meteorclient.gui.widgets.input.WTextBox;
 import meteordevelopment.meteorclient.gui.widgets.pressable.WButton;
 import meteordevelopment.meteorclient.renderer.Texture;
 import net.minecraft.util.Util;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 import static meteordevelopment.meteorclient.utils.Utils.getWindowWidth;
@@ -26,6 +30,9 @@ import static meteordevelopment.meteorclient.utils.Utils.getWindowWidth;
 public class BrowseAddonsScreen extends WindowScreen {
     private static final int CARDS_PER_ROW = 4;
     private boolean isGridView = false;
+    private WContainer contentContainer;
+    private WTextBox searchField;
+    private String currentSearch = "";
 
     public BrowseAddonsScreen(GuiTheme theme) {
         super(theme, "Browse Addons");
@@ -62,27 +69,111 @@ public class BrowseAddonsScreen extends WindowScreen {
             return;
         }
 
+        // Toolbar: Search + View Toggle
         WHorizontalList toolbar = add(theme.horizontalList()).expandX().widget();
-        toolbar.add(theme.label(addons.size() + " addons"));
-        toolbar.add(theme.horizontalList()).expandX();
+        
+        // Search Bar
+        searchField = toolbar.add(theme.textBox(currentSearch)).minWidth(200).expandX().widget();
+        searchField.setFocused(true);
+        searchField.action = () -> {
+            currentSearch = searchField.get();
+            updateContent(manager.getOnlineAddons());
+        };
 
+        // View Toggles
+        toolbar.add(theme.horizontalList()).expandX(); // Spacer
+        
         WButton listBtn = toolbar.add(theme.button(isGridView ? "List" : "[List]")).widget();
-        listBtn.action = () -> { isGridView = false; reload(); };
+        listBtn.action = () -> { 
+            isGridView = false; 
+            reload(); 
+        };
 
         WButton gridBtn = toolbar.add(theme.button(isGridView ? "[Grid]" : "Grid")).widget();
-        gridBtn.action = () -> { isGridView = true; reload(); };
+        gridBtn.action = () -> { 
+            isGridView = true; 
+            reload(); 
+        };
 
         add(theme.horizontalSeparator()).expandX();
 
+        // Content Container
+        contentContainer = add(theme.verticalList()).expandX().widget();
+        updateContent(addons);
+    }
+
+    private void updateContent(List<Addon> allAddons) {
+        contentContainer.clear();
+
+        List<Addon> filtered = allAddons.stream()
+            .filter(addon -> matchesSearch(addon, currentSearch))
+            .collect(Collectors.toList());
+
+        if (filtered.isEmpty()) {
+            contentContainer.add(theme.label("No addons match your search.")).centerX();
+            return;
+        }
+
         if (isGridView) {
-            initGridView(addons);
+            initGridView(contentContainer, filtered);
         } else {
-            initListView(addons);
+            initListView(contentContainer, filtered);
         }
     }
 
-    private void initGridView(List<Addon> addons) {
-        WTable table = add(theme.table()).expandX().widget();
+    private boolean matchesSearch(Addon addon, String query) {
+        if (query == null || query.isEmpty()) return true;
+        String q = query.toLowerCase(Locale.ROOT);
+
+        // Name
+        if (addon.getName().toLowerCase(Locale.ROOT).contains(q)) return true;
+
+        // Description
+        if (addon.getDescription().isPresent() && addon.getDescription().get().toLowerCase(Locale.ROOT).contains(q)) return true;
+
+        // Author
+        if (addon.getAuthors() != null) {
+            for (String author : addon.getAuthors()) {
+                if (author.toLowerCase(Locale.ROOT).contains(q)) return true;
+            }
+        }
+
+        // Metadata Deep Search
+        if (addon instanceof OnlineAddon) {
+            AddonMetadata meta = ((OnlineAddon) addon).getMetadata();
+            if (meta != null) {
+                // Modules
+                if (meta.features != null && meta.features.modules != null) {
+                    for (String module : meta.features.modules) {
+                        if (module.toLowerCase(Locale.ROOT).contains(q)) return true;
+                    }
+                }
+                // Commands
+                if (meta.features != null && meta.features.commands != null) {
+                    for (String cmd : meta.features.commands) {
+                        if (cmd.toLowerCase(Locale.ROOT).contains(q)) return true;
+                    }
+                }
+                // Custom Screens
+                if (meta.features != null && meta.features.custom_screens != null) {
+                    for (String screen : meta.features.custom_screens) {
+                        if (screen.toLowerCase(Locale.ROOT).contains(q)) return true;
+                    }
+                }
+                // Custom Tags (e.g. "qol", "pvp")
+                if (meta.custom != null && meta.custom.tags != null) {
+                    for (String tag : meta.custom.tags) {
+                        if (tag.toLowerCase(Locale.ROOT).contains(q)) return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private void initGridView(WContainer parent, List<Addon> addons) {
+        WTable table = parent.add(theme.table()).expandX().widget();
         int col = 0;
         for (Addon addon : addons) {
             table.add(new WAddonCard(addon, () -> mc.setScreen(new AddonDetailScreen(theme, addon, this))));
@@ -94,8 +185,8 @@ public class BrowseAddonsScreen extends WindowScreen {
         }
     }
 
-    private void initListView(List<Addon> addons) {
-        WVerticalList list = add(theme.verticalList()).expandX().widget();
+    private void initListView(WContainer parent, List<Addon> addons) {
+        WVerticalList list = parent.add(theme.verticalList()).expandX().widget();
         
         for (int i = 0; i < addons.size(); i++) {
             Addon addon = addons.get(i);
