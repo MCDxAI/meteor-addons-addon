@@ -122,6 +122,11 @@ public class AddonManager extends System<AddonManager> {
                 List<AddonMetadata> filteredMetadata = availableAddons.stream()
                     .filter(AddonMetadata::supportsCurrentVersion)
                     .filter(addon -> addon.verified)
+                    .filter(addon -> {
+                        // Hardcoded ignore for template repo
+                        if (addon.repo == null || addon.repo.id == null) return true;
+                        return !addon.repo.id.equalsIgnoreCase("meteordevelopment/meteor-addon-template");
+                    })
                     .collect(Collectors.toMap(
                         addon -> addon.name,
                         addon -> addon,

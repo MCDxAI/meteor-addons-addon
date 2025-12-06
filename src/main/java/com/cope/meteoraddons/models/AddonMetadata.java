@@ -3,6 +3,7 @@ package com.cope.meteoraddons.models;
 import com.cope.meteoraddons.util.VersionUtil;
 
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Meteor addon metadata from scanner JSON.
@@ -72,15 +73,27 @@ public class AddonMetadata {
     }
 
     public String[] getDownloadUrls() {
-        if (links == null || links.downloads == null || links.downloads.isEmpty()) {
+        if (links == null) {
             return new String[0];
         }
 
-        String currentVersion = VersionUtil.getCurrentMinecraftVersion();
+        List<String> urls = new ArrayList<>();
 
-        return links.downloads.stream()
-            .filter(url -> url != null && url.contains(currentVersion))
-            .toArray(String[]::new);
+        // Priority 1: Latest Release
+        if (links.latest_release != null && !links.latest_release.isEmpty()) {
+            urls.add(links.latest_release);
+        }
+
+        // Priority 2: Compatible downloads from the list
+        if (links.downloads != null && !links.downloads.isEmpty()) {
+            String currentVersion = VersionUtil.getCurrentMinecraftVersion();
+            
+            links.downloads.stream()
+                .filter(url -> url != null && url.contains(currentVersion))
+                .forEach(urls::add);
+        }
+
+        return urls.toArray(String[]::new);
     }
 
     public static class Features {
@@ -106,6 +119,7 @@ public class AddonMetadata {
     public static class Links {
         public String github;
         public List<String> downloads;
+        public String latest_release;
         public String discord;
         public String homepage;
         public String icon;

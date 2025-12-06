@@ -40,7 +40,7 @@ public class AddonDetailScreen extends WindowScreen {
     @Override
     public void initWidgets() {
         // Header Section (Icon + Details)
-        WHorizontalList header = add(theme.horizontalList()).expandX().widget();
+        WHorizontalList header = add(theme.horizontalList()).centerX().widget();
         
         // Icon
         Texture iconTexture = IconCache.get(addon);
@@ -61,17 +61,7 @@ public class AddonDetailScreen extends WindowScreen {
             titleRow.add(theme.label("(Installed)", true).color(theme.textSecondaryColor())).padLeft(4);
         }
 
-        if (addon instanceof OnlineAddon) {
-            AddonMetadata metadata = ((OnlineAddon) addon).getMetadata();
-            if (metadata.verified) {
-                details.add(theme.label("Verified").color(theme.textSecondaryColor()));
-            }
-        }
-        
-        String version = addon.getVersion();
-        if (version != null && !version.isEmpty()) {
-            details.add(theme.label("Version: " + version).color(theme.textSecondaryColor()));
-        }
+
 
         List<String> authors = addon.getAuthors();
         if (!authors.isEmpty()) {
@@ -82,8 +72,21 @@ public class AddonDetailScreen extends WindowScreen {
 
         // Description
         addon.getDescription().ifPresent(desc -> {
-            add(theme.label(desc, getWindowWidth() / 2.0));
+            add(theme.label(desc, getWindowWidth() / 2.0)).centerX();
         });
+
+        // Tags
+        if (addon instanceof OnlineAddon) {
+            AddonMetadata metadata = ((OnlineAddon) addon).getMetadata();
+            if (metadata.custom != null && metadata.custom.tags != null && !metadata.custom.tags.isEmpty()) {
+                WHorizontalList tagsList = add(theme.horizontalList()).centerX().padTop(3).widget();
+                tagsList.add(theme.label("Tags: ").color(theme.textSecondaryColor()));
+
+                for (String tag : metadata.custom.tags) {
+                    tagsList.add(theme.label(tag)).padRight(6);
+                }
+            }
+        }
         
         // Stats (Online Addons only)
         if (addon instanceof OnlineAddon) {
