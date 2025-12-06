@@ -4,6 +4,7 @@ import com.cope.meteoraddons.addons.Addon;
 import com.cope.meteoraddons.addons.OnlineAddon;
 import com.cope.meteoraddons.config.IconSizeConfig;
 import com.cope.meteoraddons.gui.widgets.WAddonCard;
+import com.cope.meteoraddons.gui.widgets.WAddonListItem;
 import com.cope.meteoraddons.models.AddonMetadata;
 import com.cope.meteoraddons.systems.AddonManager;
 import com.cope.meteoraddons.util.IconCache;
@@ -98,56 +99,27 @@ public class BrowseAddonsScreen extends WindowScreen {
         
         for (int i = 0; i < addons.size(); i++) {
             Addon addon = addons.get(i);
-            WHorizontalList row = list.add(theme.horizontalList()).expandX().widget();
             
-            // Icon
-            Texture icon = IconCache.get(addon);
-            row.add(theme.texture(IconSizeConfig.ADDON_ICON_SIZE, IconSizeConfig.ADDON_ICON_SIZE, 0, icon)).widget(); 
-            
-            // Details
-            WVerticalList details = row.add(theme.verticalList()).expandX().widget();
-            
-            // Name & Version
-            WHorizontalList infoLine = details.add(theme.horizontalList()).widget();
-            infoLine.add(theme.label(addon.getName(), true));
-            
-            String version = addon.getVersion();
-            if (version != null) infoLine.add(theme.label(version).color(theme.textSecondaryColor()));
-
-            if (addon instanceof OnlineAddon) {
-                AddonMetadata meta = ((OnlineAddon) addon).getMetadata();
-                if (meta.verified) infoLine.add(theme.label("✓").color(theme.textColor()));
-            }
-
-            // Description
-            addon.getDescription().ifPresent(desc -> {
-                 details.add(theme.label(desc, getWindowWidth() / 2.0).color(theme.textSecondaryColor()));
-            });
-            
-            // Authors
-            List<String> authors = addon.getAuthors();
-            if (!authors.isEmpty()) {
-                details.add(theme.label("By: " + String.join(", ", authors)).color(theme.textSecondaryColor()));
-            }
-            
-            // Action Buttons (Right aligned)
-            WVerticalList actions = row.add(theme.verticalList()).widget();
-            
-            if (addon.isInstalled()) {
-                WHorizontalList installedContainer = actions.add(theme.horizontalList()).right().widget();
-                installedContainer.add(theme.label("Installed"));
-                Texture installedIcon = IconCache.getInstalledIndicator();
-                if (installedIcon != null) {
-                    double size = theme.textHeight();
-                    installedContainer.add(theme.texture(size, size, 0, installedIcon)).padLeft(4);
+            list.add(new WAddonListItem(
+                addon,
+                () -> mc.setScreen(new AddonDetailScreen(theme, addon, this)),
+                (button) -> {
+                    if (addon instanceof OnlineAddon) {
+                        button.set("Downloading...");
+                        meteordevelopment.meteorclient.utils.network.MeteorExecutor.execute(() -> {
+                            boolean success = AddonManager.get().downloadAddon((OnlineAddon) addon);
+                            mc.execute(() -> {
+                                if (success) {
+                                    button.set("Downloaded!");
+                                    // Optionally refresh logic or disable button could go here
+                                } else {
+                                    button.set("Failed");
+                                }
+                            });
+                        });
+                    }
                 }
-            } else {
-                WButton install = actions.add(theme.button("Install")).right().widget();
-                install.action = () -> mc.setScreen(new AddonDetailScreen(theme, addon, this));
-            }
-            
-            WButton detailsBtn = actions.add(theme.button("Details")).right().widget();
-            detailsBtn.action = () -> mc.setScreen(new AddonDetailScreen(theme, addon, this));
+            )).expandX();
 
             // Separator
             if (i < addons.size() - 1) {
