@@ -23,11 +23,18 @@ public class HttpClient {
         .writeTimeout(30, TimeUnit.SECONDS)
         .build();
 
-    public static String downloadString(String url) throws IOException {
-        Request request = new Request.Builder()
-            .url(url)
-            .build();
+    /**
+     * Functional interface for handling HTTP response bodies.
+     */
+    @FunctionalInterface
+    private interface ResponseHandler<T> {
+        T handle(ResponseBody body) throws IOException;
+    }
 
+    /**
+     * Execute HTTP request and handle response with common validation logic.
+     */
+    private static <T> T executeRequest(Request request, ResponseHandler<T> handler) throws IOException {
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 throw new IOException("HTTP request failed: " + response.code() + " " + response.message());
@@ -38,8 +45,16 @@ public class HttpClient {
                 throw new IOException("Response body is null");
             }
 
-            return body.string();
+            return handler.handle(body);
         }
+    }
+
+    public static String downloadString(String url) throws IOException {
+        Request request = new Request.Builder()
+            .url(url)
+            .build();
+
+        return executeRequest(request, ResponseBody::string);
     }
 
     public static byte[] downloadBytes(String url) throws IOException {
@@ -47,18 +62,7 @@ public class HttpClient {
             .url(url)
             .build();
 
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("HTTP request failed: " + response.code() + " " + response.message());
-            }
-
-            ResponseBody body = response.body();
-            if (body == null) {
-                throw new IOException("Response body is null");
-            }
-
-            return body.bytes();
-        }
+        return executeRequest(request, ResponseBody::bytes);
     }
 
     public static void downloadFile(String url, Path destPath) throws IOException {
@@ -68,16 +72,7 @@ public class HttpClient {
             .url(url)
             .build();
 
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("HTTP request failed: " + response.code() + " " + response.message());
-            }
-
-            ResponseBody body = response.body();
-            if (body == null) {
-                throw new IOException("Response body is null");
-            }
-
+        executeRequest(request, body -> {
             Files.createDirectories(destPath.getParent());
 
             Path tempPath = destPath.resolveSibling(destPath.getFileName() + ".tmp");
@@ -89,7 +84,8 @@ public class HttpClient {
             Files.move(tempPath, destPath, StandardCopyOption.REPLACE_EXISTING);
 
             MeteorAddonsAddon.LOG.info("Successfully downloaded to: {}", destPath);
-        }
+            return null; // Void operation
+        });
     }
 
     public static String downloadFileWithFallback(String[] urls, Path destPath) {

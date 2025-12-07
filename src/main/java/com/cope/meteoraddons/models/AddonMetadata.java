@@ -10,6 +10,18 @@ import java.util.ArrayList;
  * Source: https://raw.githubusercontent.com/cqb13/meteor-addon-scanner/refs/heads/main/addons.json
  */
 public class AddonMetadata {
+    /**
+     * Get the first non-null, non-empty string from the provided values.
+     * Used for priority-based fallback logic (custom fields override regular fields).
+     */
+    private static String getFirstNonEmpty(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isEmpty()) {
+                return value;
+            }
+        }
+        return null;
+    }
     public String name;
     public String description;
     public String mc_version;
@@ -36,40 +48,32 @@ public class AddonMetadata {
     }
 
     public String getDisplayDescription() {
-        if (custom != null && custom.description != null && !custom.description.isEmpty()) {
-            return custom.description;
-        }
-        return description != null ? description : "";
+        String desc = getFirstNonEmpty(
+            custom != null ? custom.description : null,
+            description
+        );
+        return desc != null ? desc : "";
     }
 
     public String getIconUrl() {
-        if (custom != null && custom.icon != null && !custom.icon.isEmpty()) {
-            return custom.icon;
-        }
-        if (links != null && links.icon != null && !links.icon.isEmpty()) {
-            return links.icon;
-        }
-        return null;
+        return getFirstNonEmpty(
+            custom != null ? custom.icon : null,
+            links != null ? links.icon : null
+        );
     }
 
     public String getDiscordUrl() {
-        if (custom != null && custom.discord != null && !custom.discord.isEmpty()) {
-            return custom.discord;
-        }
-        if (links != null && links.discord != null && !links.discord.isEmpty()) {
-            return links.discord;
-        }
-        return null;
+        return getFirstNonEmpty(
+            custom != null ? custom.discord : null,
+            links != null ? links.discord : null
+        );
     }
 
     public String getHomepageUrl() {
-        if (custom != null && custom.homepage != null && !custom.homepage.isEmpty()) {
-            return custom.homepage;
-        }
-        if (links != null && links.homepage != null && !links.homepage.isEmpty()) {
-            return links.homepage;
-        }
-        return null;
+        return getFirstNonEmpty(
+            custom != null ? custom.homepage : null,
+            links != null ? links.homepage : null
+        );
     }
 
     public String[] getDownloadUrls() {

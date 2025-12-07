@@ -99,48 +99,14 @@ public class AddonDetailScreen extends WindowScreen {
              }
              
              // Features Section
-             if (metadata.features != null) {
-                 boolean hasFeatures = (metadata.features.modules != null && !metadata.features.modules.isEmpty()) ||
-                                       (metadata.features.commands != null && !metadata.features.commands.isEmpty()) ||
-                                       (metadata.features.hud_elements != null && !metadata.features.hud_elements.isEmpty()) ||
-                                       (metadata.features.custom_screens != null && !metadata.features.custom_screens.isEmpty());
-                                       
-                 if (hasFeatures) {
-                     WSection featuresSection = add(theme.section("Features", true)).expandX().widget();
-                     
-                     boolean first = true;
-                     
-                     if (metadata.features.modules != null && !metadata.features.modules.isEmpty()) {
-                        featuresSection.add(theme.label("Modules (" + metadata.features.modules.size() + "):"));
-                        String modulesStr = String.join(", ", metadata.features.modules);
-                        featuresSection.add(theme.label(modulesStr, getWindowWidth() / 2.0).color(theme.textSecondaryColor()));
-                        first = false;
-                     }
-                     
-                     if (metadata.features.commands != null && !metadata.features.commands.isEmpty()) {
-                        if (!first) featuresSection.add(theme.horizontalSeparator()).expandX();
-                        featuresSection.add(theme.label("Commands (" + metadata.features.commands.size() + "):"));
-                        String cmdStr = String.join(", ", metadata.features.commands);
-                        featuresSection.add(theme.label(cmdStr, getWindowWidth() / 2.0).color(theme.textSecondaryColor()));
-                        first = false;
-                     }
-                     
-                      if (metadata.features.hud_elements != null && !metadata.features.hud_elements.isEmpty()) {
-                        if (!first) featuresSection.add(theme.horizontalSeparator()).expandX();
-                        featuresSection.add(theme.label("HUD (" + metadata.features.hud_elements.size() + "):"));
-                        String hudStr = String.join(", ", metadata.features.hud_elements);
-                        featuresSection.add(theme.label(hudStr, getWindowWidth() / 2.0).color(theme.textSecondaryColor()));
-                        first = false;
-                     }
+             if (metadata.features != null && hasAnyFeatures(metadata.features)) {
+                 WSection featuresSection = add(theme.section("Features", true)).expandX().widget();
 
-                      if (metadata.features.custom_screens != null && !metadata.features.custom_screens.isEmpty()) {
-                        if (!first) featuresSection.add(theme.horizontalSeparator()).expandX();
-                        featuresSection.add(theme.label("Screens (" + metadata.features.custom_screens.size() + "):"));
-                        String screensStr = String.join(", ", metadata.features.custom_screens);
-                        featuresSection.add(theme.label(screensStr, getWindowWidth() / 2.0).color(theme.textSecondaryColor()));
-                        first = false;
-                     }
-                 }
+                 boolean needsSeparator = false;
+                 needsSeparator = addFeatureList(featuresSection, "Modules", metadata.features.modules, needsSeparator) || needsSeparator;
+                 needsSeparator = addFeatureList(featuresSection, "Commands", metadata.features.commands, needsSeparator) || needsSeparator;
+                 needsSeparator = addFeatureList(featuresSection, "HUD", metadata.features.hud_elements, needsSeparator) || needsSeparator;
+                 addFeatureList(featuresSection, "Screens", metadata.features.custom_screens, needsSeparator);
              }
         }
 
@@ -187,5 +153,40 @@ public class AddonDetailScreen extends WindowScreen {
         // Back Button
         WButton backButton = actions.add(theme.button("Back")).widget();
         backButton.action = () -> mc.setScreen(parent);
+    }
+
+    /**
+     * Check if metadata has any non-empty feature lists.
+     */
+    private boolean hasAnyFeatures(AddonMetadata.Features features) {
+        return (features.modules != null && !features.modules.isEmpty()) ||
+               (features.commands != null && !features.commands.isEmpty()) ||
+               (features.hud_elements != null && !features.hud_elements.isEmpty()) ||
+               (features.custom_screens != null && !features.custom_screens.isEmpty());
+    }
+
+    /**
+     * Add a feature list to the section if items are present.
+     *
+     * @param section The section to add to
+     * @param label The feature type label (e.g., "Modules", "Commands")
+     * @param items The list of feature names
+     * @param addSeparator Whether to add a separator before this feature group
+     * @return true if items were added, false otherwise
+     */
+    private boolean addFeatureList(WSection section, String label, List<String> items, boolean addSeparator) {
+        if (items == null || items.isEmpty()) {
+            return false;
+        }
+
+        if (addSeparator) {
+            section.add(theme.horizontalSeparator()).expandX();
+        }
+
+        section.add(theme.label(label + " (" + items.size() + "):"));
+        String itemsStr = String.join(", ", items);
+        section.add(theme.label(itemsStr, getWindowWidth() / 2.0).color(theme.textSecondaryColor()));
+
+        return true;
     }
 }

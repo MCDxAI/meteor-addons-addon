@@ -4,9 +4,10 @@ import com.cope.meteoraddons.addons.Addon;
 import com.cope.meteoraddons.addons.OnlineAddon;
 import com.cope.meteoraddons.config.IconSizeConfig;
 import com.cope.meteoraddons.gui.widgets.WAddonCard;
-import com.cope.meteoraddons.gui.widgets.WAddonListItem;
+import com.cope.meteoraddons.gui.widgets.WAddonList;
 import com.cope.meteoraddons.models.AddonMetadata;
 import com.cope.meteoraddons.systems.AddonManager;
+import com.cope.meteoraddons.util.AddonSearchUtil;
 import com.cope.meteoraddons.util.IconCache;
 import com.cope.meteoraddons.util.VersionUtil;
 import meteordevelopment.meteorclient.gui.GuiTheme;
@@ -106,7 +107,7 @@ public class BrowseAddonsScreen extends WindowScreen {
         contentContainer.clear();
 
         List<Addon> filtered = allAddons.stream()
-            .filter(addon -> matchesSearch(addon, currentSearch))
+            .filter(addon -> AddonSearchUtil.matches(addon, currentSearch))
             .collect(Collectors.toList());
 
         if (filtered.isEmpty()) {
@@ -119,57 +120,6 @@ public class BrowseAddonsScreen extends WindowScreen {
         } else {
             initListView(contentContainer, filtered);
         }
-    }
-
-    private boolean matchesSearch(Addon addon, String query) {
-        if (query == null || query.isEmpty()) return true;
-        String q = query.toLowerCase(Locale.ROOT);
-
-        // Name
-        if (addon.getName().toLowerCase(Locale.ROOT).contains(q)) return true;
-
-        // Description
-        if (addon.getDescription().isPresent() && addon.getDescription().get().toLowerCase(Locale.ROOT).contains(q)) return true;
-
-        // Author
-        if (addon.getAuthors() != null) {
-            for (String author : addon.getAuthors()) {
-                if (author.toLowerCase(Locale.ROOT).contains(q)) return true;
-            }
-        }
-
-        // Metadata Deep Search
-        if (addon instanceof OnlineAddon) {
-            AddonMetadata meta = ((OnlineAddon) addon).getMetadata();
-            if (meta != null) {
-                // Modules
-                if (meta.features != null && meta.features.modules != null) {
-                    for (String module : meta.features.modules) {
-                        if (module.toLowerCase(Locale.ROOT).contains(q)) return true;
-                    }
-                }
-                // Commands
-                if (meta.features != null && meta.features.commands != null) {
-                    for (String cmd : meta.features.commands) {
-                        if (cmd.toLowerCase(Locale.ROOT).contains(q)) return true;
-                    }
-                }
-                // Custom Screens
-                if (meta.features != null && meta.features.custom_screens != null) {
-                    for (String screen : meta.features.custom_screens) {
-                        if (screen.toLowerCase(Locale.ROOT).contains(q)) return true;
-                    }
-                }
-                // Custom Tags (e.g. "qol", "pvp")
-                if (meta.custom != null && meta.custom.tags != null) {
-                    for (String tag : meta.custom.tags) {
-                        if (tag.toLowerCase(Locale.ROOT).contains(q)) return true;
-                    }
-                }
-            }
-        }
-
-        return false;
     }
 
     private void initGridView(WContainer parent, List<Addon> addons) {
@@ -186,36 +136,24 @@ public class BrowseAddonsScreen extends WindowScreen {
     }
 
     private void initListView(WContainer parent, List<Addon> addons) {
-        WVerticalList list = parent.add(theme.verticalList()).expandX().widget();
-        
-        for (int i = 0; i < addons.size(); i++) {
-            Addon addon = addons.get(i);
-            
-            list.add(new WAddonListItem(
-                addon,
-                () -> mc.setScreen(new AddonDetailScreen(theme, addon, this)),
-                (button) -> {
-                    if (addon instanceof OnlineAddon) {
-                        button.set("Downloading...");
-                        meteordevelopment.meteorclient.utils.network.MeteorExecutor.execute(() -> {
-                            boolean success = AddonManager.get().downloadAddon((OnlineAddon) addon);
-                            mc.execute(() -> {
-                                if (success) {
-                                    button.set("Downloaded!");
-                                    // Optionally refresh logic or disable button could go here
-                                } else {
-                                    button.set("Failed");
-                                }
-                            });
+        parent.add(new WAddonList(
+            addons,
+            addon -> () -> mc.setScreen(new AddonDetailScreen(theme, addon, this)),
+            addon -> button -> {
+                if (addon instanceof OnlineAddon) {
+                    button.set("Downloading...");
+                    meteordevelopment.meteorclient.utils.network.MeteorExecutor.execute(() -> {
+                        boolean success = AddonManager.get().downloadAddon((OnlineAddon) addon);
+                        mc.execute(() -> {
+                            if (success) {
+                                button.set("Downloaded!");
+                            } else {
+                                button.set("Failed");
+                            }
                         });
-                    }
+                    });
                 }
-            )).expandX();
-
-            // Separator
-            if (i < addons.size() - 1) {
-                list.add(theme.horizontalSeparator()).expandX();
             }
-        }
+        )).expandX();
     }
 }

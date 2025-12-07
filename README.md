@@ -21,32 +21,40 @@ To build the project locally:
 
 <div align="center">
 
-## Structure
-
-</div>
-
-```
-src/main/java/com/cope/meteoraddons/
-├── MeteorAddonsAddon.java      # Main addon entry point
-├── addons/
-│   ├── Addon.java              # Abstract addon class
-│   ├── InstalledAddon.java     # Represents a locally installed addon
-│   └── OnlineAddon.java        # Represents an addon available online
-├── gui/
-│   ├── screens/                # Custom screens
-│   ├── tabs/
-│   │   └── AddonsTab.java      # GUI tab for addon browser
-│   └── widgets/                # Custom widgets
-├── models/
-│   └── AddonMetadata.java      # Data model for addon metadata
-├── systems/
-│   └── AddonManager.java       # System for managing addon state
-└── util/
-    ├── AddonIconTexture.java   # Helper for loading addon icons
-    ├── HttpClient.java         # HTTP client wrapper
-    ├── IconCache.java          # Caching system for icons
-    └── VersionUtil.java        # Utility for version comparison
-```
+## Project Structure
+  
+  </div>
+  
+  ```
+  src/main/java/com/cope/meteoraddons/
+  ├── MeteorAddonsAddon.java      # Main addon entry point
+  ├── addons/
+  │   ├── Addon.java              # Abstract addon class
+  │   ├── InstalledAddon.java     # Represents a locally installed addon
+  │   └── OnlineAddon.java        # Represents an addon available online
+  ├── config/
+  │   └── IconSizeConfig.java     # Icon size configuration
+  ├── gui/
+  │   ├── screens/
+  │   │   ├── AddonDetailScreen.java     # Screen showing details of an addon
+  │   │   ├── BrowseAddonsScreen.java    # Screen for browsing online addons
+  │   │   └── InstalledAddonsScreen.java # Screen for managing installed addons
+  │   ├── tabs/
+  │   │   └── AddonsTab.java      # GUI tab for addon browser
+  │   └── widgets/
+  │       ├── WAddonCard.java     # Widget for displaying an addon in a grid
+  │       └── WAddonListItem.java # Widget for displaying an addon in a list
+  ├── models/
+  │   └── AddonMetadata.java      # Data model for addon metadata
+  ├── systems/
+  │   ├── AddonManager.java       # System for managing addon state
+  │   └── IconPreloadSystem.java  # System for async icon loading
+  └── util/
+      ├── HttpClient.java         # HTTP client wrapper
+      ├── IconCache.java          # Caching system for icons
+      ├── TimeUtil.java           # Time utility functions
+      └── VersionUtil.java        # Utility for version comparison
+  ```
 
 <div align="center">
 

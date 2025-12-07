@@ -4,7 +4,7 @@ import com.cope.meteoraddons.addons.Addon;
 import com.cope.meteoraddons.config.IconSizeConfig;
 import com.cope.meteoraddons.systems.AddonManager;
 import com.cope.meteoraddons.util.IconCache;
-import com.cope.meteoraddons.gui.widgets.WAddonListItem;
+import com.cope.meteoraddons.gui.widgets.WAddonList;
 import meteordevelopment.meteorclient.gui.GuiTheme;
 import meteordevelopment.meteorclient.gui.WindowScreen;
 import meteordevelopment.meteorclient.gui.widgets.containers.WHorizontalList;
@@ -39,25 +39,12 @@ public class InstalledAddonsScreen extends WindowScreen {
         if (addons.isEmpty()) {
             add(theme.label("No Meteor addons installed")).expandX().centerX();
         } else {
-            // List of installed addons
-            WVerticalList list = add(theme.verticalList()).expandX().widget();
-
-            for (int i = 0; i < addons.size(); i++) {
-                Addon addon = addons.get(i);
-                
-                // Pass null for onInstall since we are already in the installed list, 
-                // but the widget will still show the "Installed" badge which provides consistency.
-                list.add(new WAddonListItem(
-                    addon,
-                    () -> mc.setScreen(new AddonDetailScreen(theme, addon, this)),
-                    null
-                )).expandX();
-
-                // Separator
-                if (i < addons.size() - 1) {
-                    list.add(theme.horizontalSeparator()).expandX();
-                }
-            }
+            // List of installed addons (no install button needed)
+            add(new WAddonList(
+                addons,
+                addon -> () -> mc.setScreen(new AddonDetailScreen(theme, addon, this)),
+                null
+            )).expandX();
         }
     }
 }
