@@ -2,26 +2,12 @@
 
 # Meteor Addons
 
+![Minecraft](https://img.shields.io/badge/Minecraft-1.21.10-00800f?style=flat)
+![Fabric](https://img.shields.io/badge/Fabric-0.17.3-3d5dff?style=flat)
+![Meteor Client](https://img.shields.io/badge/Meteor_Client-Latest-8a11b6?style=flat)
+![Java](https://img.shields.io/badge/Java-21-e28655?style=flat)
+
 A Meteor Client addon that enables browsing, installing, and updating addons directly from within the client.
-
-[![Minecraft](https://img.shields.io/badge/Minecraft-1.21.10-green?style=for-the-badge)](https://github.com/mcdxai/meteor-addons)
-[![Fabric](https://img.shields.io/badge/Fabric-0.17.3-blue?style=for-the-badge)](https://fabricmc.net/)
-[![Meteor Client](https://img.shields.io/badge/Meteor_Client-1.21.10-blueviolet?style=for-the-badge)](https://meteorclient.com/)
-[![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge)](https://adoptium.net/)
-
-<br />
-
-Meteor Addons enables browsing, installing, and updating addons directly from within the Meteor Client.
-Addon data is sourced from meteor-addon-scanner to ensure a wide range of available extensions.
-
-## Features
-
-| Feature | Description |
-| :--- | :--- |
-| **Addon Browser** | Browse available Meteor Client addons directly in-game |
-| **Metadata Viewer** | View descriptions, features, and stats for each addon |
-| **One-Click Install** | Install new addons instantly without leaving the game |
-| **Update Manager** | Keep your installed addons up to date with a single click |
 
 ## Building
 
