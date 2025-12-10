@@ -9,7 +9,8 @@
       "mcp__gradle-mcp-server__gradle_build",
       "WebFetch(domain:maven.fabricmc.net)",
       "mcp__code-search-mcp__search_text",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "WebFetch(domain:github.blog)"
     ],
     "deny": [],
     "ask": []

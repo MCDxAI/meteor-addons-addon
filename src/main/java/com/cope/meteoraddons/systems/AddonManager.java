@@ -40,6 +40,7 @@ public class AddonManager extends System<AddonManager> {
     private List<String> installedAddonNames = new ArrayList<>();
     private boolean isLoading = false;
     private String lastError = null;
+    private Runnable onLoadComplete = null;
 
     public AddonManager() {
         super("addon-manager");
@@ -188,6 +189,11 @@ public class AddonManager extends System<AddonManager> {
         mc.execute(() -> {
             MeteorAddonsAddon.LOG.info("Converting downloaded icons to GPU textures");
             IconPreloadSystem.get().reload(mc.getResourceManager());
+
+            // Notify that loading is complete
+            if (onLoadComplete != null) {
+                onLoadComplete.run();
+            }
         });
     }
 
@@ -246,5 +252,19 @@ public class AddonManager extends System<AddonManager> {
 
     public boolean isInstalled(String addonName) {
         return installedAddonNames.contains(addonName);
+    }
+
+    /**
+     * Set callback to run when addon loading is complete (after icons preloaded).
+     */
+    public void setOnLoadComplete(Runnable callback) {
+        this.onLoadComplete = callback;
+    }
+
+    /**
+     * Get raw addon metadata list (for update checker).
+     */
+    public List<AddonMetadata> getAvailableAddons() {
+        return availableAddons;
     }
 }
