@@ -2,20 +2,22 @@
 mod-version = "0.1.0"
 
 # Fabric (https://fabricmc.net/develop)
-minecraft = "1.21.10"
-yarn-mappings = "1.21.10+build.2"
-fabric-loader = "0.17.3"
+minecraft = "1.21.11"
+yarn-mappings = "1.21.11+build.3"
+fabric-loader = "0.18.2"
 
 # Loom (https://github.com/FabricMC/fabric-loom)
-loom = "1.12-SNAPSHOT"
+loom = "1.14-SNAPSHOT"
 
 # Meteor (https://github.com/MeteorDevelopment/meteor-client/)
-meteor = "1.21.10-SNAPSHOT"
+meteor = "1.21.11-SNAPSHOT"
 
 # Dependencies
 junit = "5.10.2"
 gson = "2.11.0"
 okhttp = "4.12.0"
+okio = "3.6.0"
+kotlin-stdlib = "1.9.10"
 
 [libraries]
 # Fabric base
@@ -29,6 +31,8 @@ meteor-client = { module = "meteordevelopment:meteor-client", version.ref = "met
 # Dependencies for addon functionality
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin-stdlib" }
 
 # Testing
 junitApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }

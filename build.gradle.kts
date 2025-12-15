@@ -32,6 +32,8 @@ dependencies {
     // HTTP client for downloading addons
     modImplementation(libs.okhttp)
     include(libs.okhttp)
+    include(libs.okio)
+    include(libs.kotlin.stdlib)
 
     // JSON parsing
     modImplementation(libs.gson)
