@@ -12,7 +12,8 @@
       "Bash(grep:*)",
       "WebFetch(domain:github.blog)",
       "Bash(.gradlew dependencies:*)",
-      "mcp__gradle-mcp-server__gradle_dependencies"
+      "mcp__gradle-mcp-server__gradle_dependencies",
+      "Skill(readme-generator)"
     ],
     "deny": [],
     "ask": []
