@@ -286,6 +286,6 @@ The `ai_reference/` folder (git-ignored) contains complete source code for:
 
 ## Build Output
 
-Final JAR: `build/libs/meteor-addons-0.1.0.jar` (~1.1 MB with bundled dependencies)
+Final JAR: `build/libs/meteor-addons-0.2.0.jar` (~1.1 MB with bundled dependencies)
 
 Install by placing in `.minecraft/mods/` alongside Meteor Client and Fabric Loader.
