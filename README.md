@@ -2,8 +2,8 @@
 
 # Meteor Addons
 
-![Minecraft](https://img.shields.io/badge/Minecraft-1.21.10-00800f?style=flat)
-![Fabric](https://img.shields.io/badge/Fabric-0.17.3-3d5dff?style=flat)
+![Minecraft](https://img.shields.io/badge/Minecraft-1.21.11-00800f?style=flat)
+![Fabric](https://img.shields.io/badge/Fabric-0.18.2-3d5dff?style=flat)
 ![Meteor Client](https://img.shields.io/badge/Meteor_Client-Latest-8a11b6?style=flat)
 ![Java](https://img.shields.io/badge/Java-21-e28655?style=flat)
 
