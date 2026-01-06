@@ -7,6 +7,7 @@ import com.cope.meteoraddons.addons.OnlineAddon;
 import com.cope.meteoraddons.config.IconSizeConfig;
 import com.cope.meteoraddons.models.AddonMetadata;
 import com.cope.meteoraddons.models.UpdateInfo;
+import com.cope.meteoraddons.models.AddonMetadata.Feature;
 import com.cope.meteoraddons.systems.AddonManager;
 import com.cope.meteoraddons.util.GitHubReleaseAPI;
 import com.cope.meteoraddons.util.HashUtil;
@@ -29,6 +30,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 import static meteordevelopment.meteorclient.utils.Utils.getWindowWidth;
@@ -50,17 +52,18 @@ public class AddonDetailScreen extends WindowScreen {
     public void initWidgets() {
         // Header Section (Icon + Details)
         WHorizontalList header = add(theme.horizontalList()).centerX().widget();
-        
+
         // Icon
         Texture iconTexture = IconCache.get(addon);
-        header.add(theme.texture(IconSizeConfig.ADDON_ICON_SIZE, IconSizeConfig.ADDON_ICON_SIZE, 0, iconTexture)).widget();
+        header.add(theme.texture(IconSizeConfig.ADDON_ICON_SIZE, IconSizeConfig.ADDON_ICON_SIZE, 0, iconTexture))
+                .widget();
 
         // Details (Name, Authors, Version, Verified)
         WVerticalList details = header.add(theme.verticalList()).expandX().widget();
-        
+
         WHorizontalList titleRow = details.add(theme.horizontalList()).widget();
         titleRow.add(theme.label(addon.getName(), true)); // Title
-        
+
         if (addon.isInstalled()) {
             Texture installedIcon = IconCache.getInstalledIndicator();
             if (installedIcon != null) {
@@ -69,8 +72,6 @@ public class AddonDetailScreen extends WindowScreen {
             }
             titleRow.add(theme.label("(Installed)", true).color(theme.textSecondaryColor())).padLeft(4);
         }
-
-
 
         List<String> authors = addon.getAuthors();
         if (!authors.isEmpty()) {
@@ -96,27 +97,30 @@ public class AddonDetailScreen extends WindowScreen {
                 }
             }
         }
-        
+
         // Stats (Online Addons only)
         if (addon instanceof OnlineAddon) {
-             AddonMetadata metadata = ((OnlineAddon) addon).getMetadata();
-             if (metadata.repo != null) {
-                 WHorizontalList stats = add(theme.horizontalList()).centerX().widget();
-                 stats.add(theme.label("Stars: " + metadata.repo.stars));
-                 stats.add(theme.label("Downloads: " + metadata.repo.downloads)).padHorizontal(10);
-                 stats.add(theme.label("Updated: " + TimeUtil.getRelativeTime(metadata.repo.last_update)));
-             }
-             
-             // Features Section
-             if (metadata.features != null && hasAnyFeatures(metadata.features)) {
-                 WSection featuresSection = add(theme.section("Features", true)).expandX().widget();
+            AddonMetadata metadata = ((OnlineAddon) addon).getMetadata();
+            if (metadata.repo != null) {
+                WHorizontalList stats = add(theme.horizontalList()).centerX().widget();
+                stats.add(theme.label("Stars: " + metadata.repo.stars));
+                stats.add(theme.label("Downloads: " + metadata.repo.downloads)).padHorizontal(10);
+                stats.add(theme.label("Updated: " + TimeUtil.getRelativeTime(metadata.repo.last_update)));
+            }
 
-                 boolean needsSeparator = false;
-                 needsSeparator = addFeatureList(featuresSection, "Modules", metadata.features.modules, needsSeparator) || needsSeparator;
-                 needsSeparator = addFeatureList(featuresSection, "Commands", metadata.features.commands, needsSeparator) || needsSeparator;
-                 needsSeparator = addFeatureList(featuresSection, "HUD", metadata.features.hud_elements, needsSeparator) || needsSeparator;
-                 addFeatureList(featuresSection, "Screens", metadata.features.custom_screens, needsSeparator);
-             }
+            // Features Section
+            if (metadata.features != null && hasAnyFeatures(metadata.features)) {
+                WSection featuresSection = add(theme.section("Features", true)).expandX().widget();
+
+                boolean needsSeparator = false;
+                needsSeparator = addFeatureList(featuresSection, "Modules", metadata.features.modules, needsSeparator)
+                        || needsSeparator;
+                needsSeparator = addFeatureList(featuresSection, "Commands", metadata.features.commands, needsSeparator)
+                        || needsSeparator;
+                needsSeparator = addFeatureList(featuresSection, "HUD", metadata.features.hud_elements, needsSeparator)
+                        || needsSeparator;
+                addStringFeatureList(featuresSection, "Screens", metadata.features.custom_screens, needsSeparator);
+            }
         }
 
         add(theme.horizontalSeparator()).expandX();
@@ -153,7 +157,8 @@ public class AddonDetailScreen extends WindowScreen {
                         if (update.isPresent()) {
                             checkUpdateBtn.set("Update Found!");
                             // Show updates screen with this single update
-                            mc.setScreen(new UpdatesAvailableScreen(GuiThemes.get(), Collections.singletonList(update.get())));
+                            mc.setScreen(new UpdatesAvailableScreen(GuiThemes.get(),
+                                    Collections.singletonList(update.get())));
                         } else {
                             checkUpdateBtn.set("Up to date");
                         }
@@ -164,19 +169,19 @@ public class AddonDetailScreen extends WindowScreen {
 
         // Link Buttons
         if (addon.getGithubUrl().isPresent()) {
-             WButton btn = actions.add(theme.button("GitHub")).widget();
-             final String url = addon.getGithubUrl().get();
-             btn.action = () -> Util.getOperatingSystem().open(url);
+            WButton btn = actions.add(theme.button("GitHub")).widget();
+            final String url = addon.getGithubUrl().get();
+            btn.action = () -> Util.getOperatingSystem().open(url);
         }
         if (addon.getDiscordUrl().isPresent()) {
-             WButton btn = actions.add(theme.button("Discord")).widget();
-             final String url = addon.getDiscordUrl().get();
-             btn.action = () -> Util.getOperatingSystem().open(url);
+            WButton btn = actions.add(theme.button("Discord")).widget();
+            final String url = addon.getDiscordUrl().get();
+            btn.action = () -> Util.getOperatingSystem().open(url);
         }
         if (addon.getHomepageUrl().isPresent()) {
-             WButton btn = actions.add(theme.button("Homepage")).widget();
-             final String url = addon.getHomepageUrl().get();
-             btn.action = () -> Util.getOperatingSystem().open(url);
+            WButton btn = actions.add(theme.button("Homepage")).widget();
+            final String url = addon.getHomepageUrl().get();
+            btn.action = () -> Util.getOperatingSystem().open(url);
         }
 
         // Back Button
@@ -189,21 +194,48 @@ public class AddonDetailScreen extends WindowScreen {
      */
     private boolean hasAnyFeatures(AddonMetadata.Features features) {
         return (features.modules != null && !features.modules.isEmpty()) ||
-               (features.commands != null && !features.commands.isEmpty()) ||
-               (features.hud_elements != null && !features.hud_elements.isEmpty()) ||
-               (features.custom_screens != null && !features.custom_screens.isEmpty());
+                (features.commands != null && !features.commands.isEmpty()) ||
+                (features.hud_elements != null && !features.hud_elements.isEmpty()) ||
+                (features.custom_screens != null && !features.custom_screens.isEmpty());
     }
 
     /**
      * Add a feature list to the section if items are present.
      *
-     * @param section The section to add to
-     * @param label The feature type label (e.g., "Modules", "Commands")
-     * @param items The list of feature names
+     * @param section      The section to add to
+     * @param label        The feature type label (e.g., "Modules", "Commands")
+     * @param items        The list of feature names
      * @param addSeparator Whether to add a separator before this feature group
      * @return true if items were added, false otherwise
      */
-    private boolean addFeatureList(WSection section, String label, List<String> items, boolean addSeparator) {
+    private boolean addFeatureList(WSection section, String label, List<Feature> items, boolean addSeparator) {
+        if (items == null || items.isEmpty()) {
+            return false;
+        }
+
+        if (addSeparator) {
+            section.add(theme.horizontalSeparator()).expandX();
+        }
+
+        section.add(theme.label(label + " (" + items.size() + "):"));
+        String itemsStr = items.stream()
+                .map(item -> item.name)
+                .collect(Collectors.joining(", "));
+        section.add(theme.label(itemsStr, getWindowWidth() / 2.0).color(theme.textSecondaryColor()));
+
+        return true;
+    }
+
+    /**
+     * Add a string feature list to the section if items are present.
+     *
+     * @param section      The section to add to
+     * @param label        The feature type label (e.g., "Modules", "Commands")
+     * @param items        The list of feature names
+     * @param addSeparator Whether to add a separator before this feature group
+     * @return true if items were added, false otherwise
+     */
+    private boolean addStringFeatureList(WSection section, String label, List<String> items, boolean addSeparator) {
         if (items == null || items.isEmpty()) {
             return false;
         }
@@ -262,7 +294,8 @@ public class AddonDetailScreen extends WindowScreen {
         MeteorAddonsAddon.LOG.info("Local SHA256: {}", localHash);
 
         // Fetch release info from GitHub
-        Optional<GitHubReleaseAPI.ReleaseInfo> releaseOpt = GitHubReleaseAPI.getLatestRelease(ownerRepo[0], ownerRepo[1]);
+        Optional<GitHubReleaseAPI.ReleaseInfo> releaseOpt = GitHubReleaseAPI.getLatestRelease(ownerRepo[0],
+                ownerRepo[1]);
         if (releaseOpt.isEmpty()) {
             MeteorAddonsAddon.LOG.warn("No release found for {}/{}", ownerRepo[0], ownerRepo[1]);
             return Optional.empty();
@@ -284,7 +317,8 @@ public class AddonDetailScreen extends WindowScreen {
         MeteorAddonsAddon.LOG.info("Remote SHA256: {}", remoteHash);
 
         if (remoteHash == null || remoteHash.isEmpty()) {
-            MeteorAddonsAddon.LOG.warn("No SHA256 digest available for {} (GitHub may not have computed it yet)", installed.getName());
+            MeteorAddonsAddon.LOG.warn("No SHA256 digest available for {} (GitHub may not have computed it yet)",
+                    installed.getName());
             return Optional.empty();
         }
 
@@ -293,16 +327,15 @@ public class AddonDetailScreen extends WindowScreen {
             MeteorAddonsAddon.LOG.info("UPDATE AVAILABLE for {}: hashes differ", installed.getName());
 
             return Optional.of(new UpdateInfo(
-                installed,
-                installed.getName(),
-                installed.getVersion(),
-                release.getVersion(),
-                release.getChangelog(),
-                asset.getDownloadUrl(),
-                remoteHash,
-                localHash,
-                localJarPath
-            ));
+                    installed,
+                    installed.getName(),
+                    installed.getVersion(),
+                    release.getVersion(),
+                    release.getChangelog(),
+                    asset.getDownloadUrl(),
+                    remoteHash,
+                    localHash,
+                    localJarPath));
         } else {
             MeteorAddonsAddon.LOG.info("{} is up to date (hashes match)", installed.getName());
             return Optional.empty();

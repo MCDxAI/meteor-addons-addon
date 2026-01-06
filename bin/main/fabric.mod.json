@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "meteor-addons",
+  "version": "${version}",
+  "name": "Meteor Addons",
+  "description": "Browse, install, and update Meteor Client addons directly from within the client",
+  "authors": [
+    "GhostTypes"
+  ],
+  "contact": {
+    "homepage": "https://github.com/MCDxAI/meteor-addons-addon",
+    "sources": "https://github.com/MCDxAI/meteor-addons-addon"
+  },
+  "icon": "assets/meteor-addons/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "meteor": [
+      "com.cope.meteoraddons.MeteorAddonsAddon"
+    ]
+  },
+  "mixins": [],
+  "custom": {
+    "meteor-client:color": "150,100,255"
+  },
+  "depends": {
+    "java": ">=21",
+    "minecraft": ">=1.21.11",
+    "meteor-client": ">=0.5.0"
+  }
+}

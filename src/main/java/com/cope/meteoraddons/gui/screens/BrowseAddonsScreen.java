@@ -2,31 +2,23 @@ package com.cope.meteoraddons.gui.screens;
 
 import com.cope.meteoraddons.addons.Addon;
 import com.cope.meteoraddons.addons.OnlineAddon;
-import com.cope.meteoraddons.config.IconSizeConfig;
 import com.cope.meteoraddons.gui.widgets.WAddonCard;
 import com.cope.meteoraddons.gui.widgets.WAddonList;
-import com.cope.meteoraddons.models.AddonMetadata;
 import com.cope.meteoraddons.systems.AddonManager;
 import com.cope.meteoraddons.util.AddonSearchUtil;
-import com.cope.meteoraddons.util.IconCache;
 import com.cope.meteoraddons.util.VersionUtil;
 import meteordevelopment.meteorclient.gui.GuiTheme;
 import meteordevelopment.meteorclient.gui.WindowScreen;
 import meteordevelopment.meteorclient.gui.widgets.containers.WContainer;
 import meteordevelopment.meteorclient.gui.widgets.containers.WHorizontalList;
 import meteordevelopment.meteorclient.gui.widgets.containers.WTable;
-import meteordevelopment.meteorclient.gui.widgets.containers.WVerticalList;
 import meteordevelopment.meteorclient.gui.widgets.input.WTextBox;
 import meteordevelopment.meteorclient.gui.widgets.pressable.WButton;
-import meteordevelopment.meteorclient.renderer.Texture;
-import net.minecraft.util.Util;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 import static meteordevelopment.meteorclient.MeteorClient.mc;
-import static meteordevelopment.meteorclient.utils.Utils.getWindowWidth;
 
 public class BrowseAddonsScreen extends WindowScreen {
     private static final int CARDS_PER_ROW = 4;
@@ -72,7 +64,7 @@ public class BrowseAddonsScreen extends WindowScreen {
 
         // Toolbar: Search + View Toggle
         WHorizontalList toolbar = add(theme.horizontalList()).expandX().widget();
-        
+
         // Search Bar
         searchField = toolbar.add(theme.textBox(currentSearch)).minWidth(200).expandX().widget();
         searchField.setFocused(true);
@@ -83,17 +75,17 @@ public class BrowseAddonsScreen extends WindowScreen {
 
         // View Toggles
         toolbar.add(theme.horizontalList()).expandX(); // Spacer
-        
+
         WButton listBtn = toolbar.add(theme.button(isGridView ? "List" : "[List]")).widget();
-        listBtn.action = () -> { 
-            isGridView = false; 
-            reload(); 
+        listBtn.action = () -> {
+            isGridView = false;
+            reload();
         };
 
         WButton gridBtn = toolbar.add(theme.button(isGridView ? "[Grid]" : "Grid")).widget();
-        gridBtn.action = () -> { 
-            isGridView = true; 
-            reload(); 
+        gridBtn.action = () -> {
+            isGridView = true;
+            reload();
         };
 
         add(theme.horizontalSeparator()).expandX();
@@ -107,8 +99,8 @@ public class BrowseAddonsScreen extends WindowScreen {
         contentContainer.clear();
 
         List<Addon> filtered = allAddons.stream()
-            .filter(addon -> AddonSearchUtil.matches(addon, currentSearch))
-            .collect(Collectors.toList());
+                .filter(addon -> AddonSearchUtil.matches(addon, currentSearch))
+                .collect(Collectors.toList());
 
         if (filtered.isEmpty()) {
             contentContainer.add(theme.label("No addons match your search.")).centerX();
@@ -137,23 +129,22 @@ public class BrowseAddonsScreen extends WindowScreen {
 
     private void initListView(WContainer parent, List<Addon> addons) {
         parent.add(new WAddonList(
-            addons,
-            addon -> () -> mc.setScreen(new AddonDetailScreen(theme, addon, this)),
-            addon -> button -> {
-                if (addon instanceof OnlineAddon) {
-                    button.set("Downloading...");
-                    meteordevelopment.meteorclient.utils.network.MeteorExecutor.execute(() -> {
-                        boolean success = AddonManager.get().downloadAddon((OnlineAddon) addon);
-                        mc.execute(() -> {
-                            if (success) {
-                                button.set("Downloaded!");
-                            } else {
-                                button.set("Failed");
-                            }
+                addons,
+                addon -> () -> mc.setScreen(new AddonDetailScreen(theme, addon, this)),
+                addon -> button -> {
+                    if (addon instanceof OnlineAddon) {
+                        button.set("Downloading...");
+                        meteordevelopment.meteorclient.utils.network.MeteorExecutor.execute(() -> {
+                            boolean success = AddonManager.get().downloadAddon((OnlineAddon) addon);
+                            mc.execute(() -> {
+                                if (success) {
+                                    button.set("Downloaded!");
+                                } else {
+                                    button.set("Failed");
+                                }
+                            });
                         });
-                    });
-                }
-            }
-        )).expandX();
+                    }
+                })).expandX();
     }
 }
