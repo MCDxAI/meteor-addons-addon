@@ -2,7 +2,6 @@ package com.cope.meteoraddons.systems;
 
 import com.cope.meteoraddons.MeteorAddonsAddon;
 import com.cope.meteoraddons.config.IconSizeConfig;
-import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.TextureFormat;
 import meteordevelopment.meteorclient.renderer.Texture;
@@ -20,8 +19,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Manages addon icon preloading during resource reload.
- * HTTP downloads fill iconDataCache (background), reload() converts to GPU textures (render thread).
- * Thread-safe: iconDataCache uses ConcurrentHashMap, textureRegistry is render-thread only.
+ * HTTP downloads fill iconDataCache (background), reload() converts to GPU
+ * textures (render thread).
+ * Thread-safe: iconDataCache uses ConcurrentHashMap, textureRegistry is
+ * render-thread only.
  */
 public class IconPreloadSystem extends System<IconPreloadSystem> implements SynchronousResourceReloader {
     private final Map<String, byte[]> iconDataCache = new ConcurrentHashMap<>();
@@ -94,8 +95,7 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
         if (installedIndicator == null) {
             try {
                 InputStream stream = IconPreloadSystem.class.getResourceAsStream(
-                    "/assets/meteor-addons/installed-icon.png"
-                );
+                        "/assets/meteor-addons/installed-icon.png");
                 if (stream != null) {
                     byte[] data = stream.readAllBytes();
                     NativeImage image = NativeImage.read(new ByteArrayInputStream(data));
@@ -142,13 +142,13 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
                 successCount++;
             } catch (Exception e) {
                 MeteorAddonsAddon.LOG.warn("Failed to create texture for {}: {}",
-                    addonId, e.getMessage());
+                        addonId, e.getMessage());
                 failureCount++;
             }
         }
 
         MeteorAddonsAddon.LOG.info("Icon preload complete: {} success, {} failed",
-            successCount, failureCount);
+                successCount, failureCount);
     }
 
     /**
@@ -166,14 +166,15 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
             image = sourceImage;
         }
 
-        Texture texture = new Texture(targetSize, targetSize, TextureFormat.RGBA8, FilterMode.LINEAR, FilterMode.LINEAR);
+        Texture texture = new Texture(targetSize, targetSize, TextureFormat.RGBA8, FilterMode.LINEAR,
+                FilterMode.LINEAR);
 
         int[] pixels = image.makePixelArray();
         byte[] bytes = new byte[targetSize * targetSize * 4];
 
         for (int i = 0; i < pixels.length; i++) {
             int color = pixels[i];
-            bytes[i * 4]     = (byte) ((color >> 16) & 0xFF);
+            bytes[i * 4] = (byte) ((color >> 16) & 0xFF);
             bytes[i * 4 + 1] = (byte) ((color >> 8) & 0xFF);
             bytes[i * 4 + 2] = (byte) (color & 0xFF);
             bytes[i * 4 + 3] = (byte) ((color >> 24) & 0xFF);
@@ -187,12 +188,13 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
 
         return texture;
     }
+
     private Texture createDefaultTexture(int size) {
         Texture texture = new Texture(size, size, TextureFormat.RGBA8, FilterMode.LINEAR, FilterMode.LINEAR);
 
         byte[] pixels = new byte[size * size * 4];
         for (int i = 0; i < pixels.length; i += 4) {
-            pixels[i]     = (byte) 128; // R
+            pixels[i] = (byte) 128; // R
             pixels[i + 1] = (byte) 128; // G
             pixels[i + 2] = (byte) 128; // B
             pixels[i + 3] = (byte) 255; // A

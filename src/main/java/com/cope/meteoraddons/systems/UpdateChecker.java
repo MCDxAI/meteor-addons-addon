@@ -3,7 +3,6 @@ package com.cope.meteoraddons.systems;
 import com.cope.meteoraddons.MeteorAddonsAddon;
 import com.cope.meteoraddons.addons.Addon;
 import com.cope.meteoraddons.addons.InstalledAddon;
-import com.cope.meteoraddons.addons.OnlineAddon;
 import com.cope.meteoraddons.models.AddonMetadata;
 import com.cope.meteoraddons.models.UpdateInfo;
 import com.cope.meteoraddons.util.GitHubReleaseAPI;
@@ -172,7 +171,8 @@ public class UpdateChecker extends System<UpdateChecker> {
         }
 
         // Fetch release info from GitHub
-        Optional<GitHubReleaseAPI.ReleaseInfo> releaseOpt = GitHubReleaseAPI.getLatestRelease(ownerRepo[0], ownerRepo[1]);
+        Optional<GitHubReleaseAPI.ReleaseInfo> releaseOpt = GitHubReleaseAPI.getLatestRelease(ownerRepo[0],
+                ownerRepo[1]);
         if (releaseOpt.isEmpty()) {
             MeteorAddonsAddon.LOG.debug("No release found for {}", name);
             return;
@@ -191,26 +191,26 @@ public class UpdateChecker extends System<UpdateChecker> {
         String remoteHash = asset.getSha256();
 
         if (remoteHash == null || remoteHash.isEmpty()) {
-            MeteorAddonsAddon.LOG.debug("No SHA256 digest available for {} (GitHub may not have computed it yet)", name);
+            MeteorAddonsAddon.LOG.debug("No SHA256 digest available for {} (GitHub may not have computed it yet)",
+                    name);
             return;
         }
 
         // Compare hashes
         if (!HashUtil.hashesMatch(localHash, remoteHash)) {
             MeteorAddonsAddon.LOG.info("Update available for {}: {} -> {}",
-                name, installed.getVersion(), release.getVersion());
+                    name, installed.getVersion(), release.getVersion());
 
             UpdateInfo update = new UpdateInfo(
-                installed,
-                name,
-                installed.getVersion(),
-                release.getVersion(),
-                release.getChangelog(),
-                asset.getDownloadUrl(),
-                remoteHash,
-                localHash,
-                localJarPath
-            );
+                    installed,
+                    name,
+                    installed.getVersion(),
+                    release.getVersion(),
+                    release.getChangelog(),
+                    asset.getDownloadUrl(),
+                    remoteHash,
+                    localHash,
+                    localJarPath);
 
             availableUpdates.add(update);
         } else {

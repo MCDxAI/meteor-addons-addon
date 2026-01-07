@@ -7,12 +7,14 @@ import java.util.ArrayList;
 
 /**
  * Meteor addon metadata from scanner JSON.
- * Source: https://raw.githubusercontent.com/cqb13/meteor-addon-scanner/refs/heads/main/addons.json
+ * Source:
+ * https://raw.githubusercontent.com/cqb13/meteor-addon-scanner/refs/heads/main/addons.json
  */
 public class AddonMetadata {
     /**
      * Get the first non-null, non-empty string from the provided values.
-     * Used for priority-based fallback logic (custom fields override regular fields).
+     * Used for priority-based fallback logic (custom fields override regular
+     * fields).
      */
     private static String getFirstNonEmpty(String... values) {
         for (String value : values) {
@@ -22,6 +24,7 @@ public class AddonMetadata {
         }
         return null;
     }
+
     public String name;
     public String description;
     public String mc_version;
@@ -49,31 +52,27 @@ public class AddonMetadata {
 
     public String getDisplayDescription() {
         String desc = getFirstNonEmpty(
-            custom != null ? custom.description : null,
-            description
-        );
+                custom != null ? custom.description : null,
+                description);
         return desc != null ? desc : "";
     }
 
     public String getIconUrl() {
         return getFirstNonEmpty(
-            custom != null ? custom.icon : null,
-            links != null ? links.icon : null
-        );
+                custom != null ? custom.icon : null,
+                links != null ? links.icon : null);
     }
 
     public String getDiscordUrl() {
         return getFirstNonEmpty(
-            custom != null ? custom.discord : null,
-            links != null ? links.discord : null
-        );
+                custom != null ? custom.discord : null,
+                links != null ? links.discord : null);
     }
 
     public String getHomepageUrl() {
         return getFirstNonEmpty(
-            custom != null ? custom.homepage : null,
-            links != null ? links.homepage : null
-        );
+                custom != null ? custom.homepage : null,
+                links != null ? links.homepage : null);
     }
 
     public String[] getDownloadUrls() {
@@ -91,21 +90,26 @@ public class AddonMetadata {
         // Priority 2: Compatible downloads from the list
         if (links.downloads != null && !links.downloads.isEmpty()) {
             String currentVersion = VersionUtil.getCurrentMinecraftVersion();
-            
+
             links.downloads.stream()
-                .filter(url -> url != null && url.contains(currentVersion))
-                .forEach(urls::add);
+                    .filter(url -> url != null && url.contains(currentVersion))
+                    .forEach(urls::add);
         }
 
         return urls.toArray(String[]::new);
     }
 
     public static class Features {
-        public List<String> modules;
-        public List<String> commands;
-        public List<String> hud_elements;
+        public List<Feature> modules;
+        public List<Feature> commands;
+        public List<Feature> hud_elements;
         public List<String> custom_screens;
         public int feature_count;
+    }
+
+    public static class Feature {
+        public String name;
+        public String description;
     }
 
     public static class Repository {

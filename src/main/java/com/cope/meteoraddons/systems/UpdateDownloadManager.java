@@ -13,7 +13,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -26,10 +25,10 @@ import java.util.function.BiConsumer;
 public class UpdateDownloadManager {
     private static final int BUFFER_SIZE = 8192;
     private static final OkHttpClient client = new OkHttpClient.Builder()
-        .connectTimeout(60, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
-        .writeTimeout(60, TimeUnit.SECONDS)
-        .build();
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .build();
 
     private final List<StagedUpdate> stagedUpdates = new ArrayList<>();
     private volatile boolean isDownloading = false;
@@ -98,11 +97,10 @@ public class UpdateDownloadManager {
      * Download multiple updates sequentially.
      */
     public void downloadUpdates(
-        List<UpdateInfo> updates,
-        BiConsumer<UpdateInfo, Double> onIndividualProgress,
-        BiConsumer<Integer, Integer> onOverallProgress,
-        CompletionCallback onComplete
-    ) {
+            List<UpdateInfo> updates,
+            BiConsumer<UpdateInfo, Double> onIndividualProgress,
+            BiConsumer<Integer, Integer> onOverallProgress,
+            CompletionCallback onComplete) {
         new Thread(() -> {
             int completed = 0;
             List<String> errors = new ArrayList<>();
@@ -111,8 +109,8 @@ public class UpdateDownloadManager {
                 final int currentIndex = completed;
                 onOverallProgress.accept(currentIndex, updates.size());
 
-                boolean[] success = {false};
-                String[] error = {null};
+                boolean[] success = { false };
+                String[] error = { null };
 
                 downloadUpdateBlocking(update, (bytes, total) -> {
                     double progress = total > 0 ? (double) bytes / total : 0;
@@ -144,7 +142,7 @@ public class UpdateDownloadManager {
      */
     private void downloadUpdateBlocking(UpdateInfo update, ProgressCallback onProgress, CompletionCallback onComplete) {
         Object lock = new Object();
-        boolean[] done = {false};
+        boolean[] done = { false };
 
         downloadUpdate(update, onProgress, (success, error) -> {
             synchronized (lock) {
@@ -171,8 +169,8 @@ public class UpdateDownloadManager {
         MeteorAddonsAddon.LOG.info("Downloading {} from {}", update.getAddonName(), url);
 
         Request request = new Request.Builder()
-            .url(url)
-            .build();
+                .url(url)
+                .build();
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
@@ -192,7 +190,7 @@ public class UpdateDownloadManager {
             Path tempFile = tempDir.resolve(fileName);
 
             try (InputStream in = body.byteStream();
-                 OutputStream out = Files.newOutputStream(tempFile)) {
+                    OutputStream out = Files.newOutputStream(tempFile)) {
 
                 byte[] buffer = new byte[BUFFER_SIZE];
                 int bytesRead;
