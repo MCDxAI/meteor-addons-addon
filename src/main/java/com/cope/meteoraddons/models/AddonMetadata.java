@@ -99,17 +99,17 @@ public class AddonMetadata {
         return urls.toArray(String[]::new);
     }
 
-    public static class Features {
-        public List<Feature> modules;
-        public List<Feature> commands;
-        public List<Feature> hud_elements;
-        public List<String> custom_screens;
-        public int feature_count;
-    }
-
-    public static class Feature {
+    public static class FeatureItem {
         public String name;
         public String description;
+    }
+
+    public static class Features {
+        public List<FeatureItem> modules;
+        public List<FeatureItem> commands;
+        public List<FeatureItem> hud_elements;
+        public List<FeatureItem> custom_screens;
+        public int feature_count;
     }
 
     public static class Repository {
