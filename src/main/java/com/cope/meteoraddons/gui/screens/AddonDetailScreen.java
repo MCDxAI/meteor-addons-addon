@@ -7,7 +7,7 @@ import com.cope.meteoraddons.addons.OnlineAddon;
 import com.cope.meteoraddons.config.IconSizeConfig;
 import com.cope.meteoraddons.models.AddonMetadata;
 import com.cope.meteoraddons.models.UpdateInfo;
-import com.cope.meteoraddons.models.AddonMetadata.Feature;
+import com.cope.meteoraddons.models.AddonMetadata.FeatureItem;
 import com.cope.meteoraddons.systems.AddonManager;
 import com.cope.meteoraddons.util.GitHubReleaseAPI;
 import com.cope.meteoraddons.util.HashUtil;
@@ -208,7 +208,7 @@ public class AddonDetailScreen extends WindowScreen {
      * @param addSeparator Whether to add a separator before this feature group
      * @return true if items were added, false otherwise
      */
-    private boolean addFeatureList(WSection section, String label, List<Feature> items, boolean addSeparator) {
+    private boolean addFeatureList(WSection section, String label, List<FeatureItem> items, boolean addSeparator) {
         if (items == null || items.isEmpty()) {
             return false;
         }
@@ -228,12 +228,6 @@ public class AddonDetailScreen extends WindowScreen {
 
     /**
      * Add a string feature list to the section if items are present.
-     *
-     * @param section      The section to add to
-     * @param label        The feature type label (e.g., "Modules", "Commands")
-     * @param items        The list of feature names
-     * @param addSeparator Whether to add a separator before this feature group
-     * @return true if items were added, false otherwise
      */
     private boolean addStringFeatureList(WSection section, String label, List<String> items, boolean addSeparator) {
         if (items == null || items.isEmpty()) {

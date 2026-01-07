@@ -3,7 +3,7 @@ package com.cope.meteoraddons.util;
 import com.cope.meteoraddons.addons.Addon;
 import com.cope.meteoraddons.addons.OnlineAddon;
 import com.cope.meteoraddons.models.AddonMetadata;
-import com.cope.meteoraddons.models.AddonMetadata.Feature;
+import com.cope.meteoraddons.models.AddonMetadata.FeatureItem;
 
 import java.util.List;
 import java.util.Locale;
@@ -69,10 +69,10 @@ public class AddonSearchUtil {
     /**
      * Check if any item in a feature list contains the query (case-insensitive).
      */
-    private static boolean containsInFeatureList(List<Feature> items, String query) {
+    private static boolean containsInFeatureList(List<FeatureItem> items, String query) {
         if (items == null)
             return false;
-        for (Feature item : items) {
+        for (FeatureItem item : items) {
             if (item.name.toLowerCase(Locale.ROOT).contains(query)) {
                 return true;
             }

@@ -108,7 +108,7 @@ public class AddonMetadata {
         public List<FeatureItem> modules;
         public List<FeatureItem> commands;
         public List<FeatureItem> hud_elements;
-        public List<FeatureItem> custom_screens;
+        public List<String> custom_screens;
         public int feature_count;
     }
 
