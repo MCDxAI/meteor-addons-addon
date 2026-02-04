@@ -30,14 +30,12 @@ dependencies {
     modImplementation(libs.meteor.client)
 
     // HTTP client for downloading addons
-    modImplementation(libs.okhttp)
-    include(libs.okhttp)
+    include(modImplementation(libs.okhttp.get())!!)
     include(libs.okio)
     include(libs.kotlin.stdlib)
 
     // JSON parsing
-    modImplementation(libs.gson)
-    include(libs.gson)
+    include(modImplementation(libs.gson.get())!!)
 
     // Testing
     testImplementation(libs.junitApi)
