@@ -20,6 +20,13 @@ repositories {
     }
 }
 
+fun DependencyHandler.modInclude(
+    dependencyProvider: Provider<out MinimalExternalModuleDependency>
+) {
+    modImplementation(dependencyProvider)
+    include(dependencyProvider)
+}
+
 dependencies {
     // Fabric
     minecraft(libs.minecraft)
@@ -30,12 +37,12 @@ dependencies {
     modImplementation(libs.meteor.client)
 
     // HTTP client for downloading addons
-    include(modImplementation(libs.okhttp.get())!!)
+    modInclude(libs.okhttp)
     include(libs.okio)
     include(libs.kotlin.stdlib)
 
     // JSON parsing
-    include(modImplementation(libs.gson.get())!!)
+    modInclude(libs.gson)
 
     // Testing
     testImplementation(libs.junitApi)
