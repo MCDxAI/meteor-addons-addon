@@ -77,11 +77,11 @@ public class UpdateInfo {
     }
 
     /**
-     * Get a display string showing version change.
+     * Get a display string showing the new version available.
      */
     public String getVersionChangeDisplay() {
-        if (currentVersion != null && newVersion != null && !currentVersion.equals(newVersion)) {
-            return currentVersion + " → " + newVersion;
+        if (newVersion != null && !newVersion.isEmpty()) {
+            return newVersion;
         }
         return "Update available";
     }

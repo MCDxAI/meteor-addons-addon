@@ -19,7 +19,9 @@ import net.minecraft.nbt.NbtCompound;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -210,7 +212,7 @@ public class AddonManager extends System<AddonManager> {
             Path modsFolder = meteorFolder.getParent().resolve("mods");
 
             String url = downloadUrls[0];
-            String fileName = url.substring(url.lastIndexOf('/') + 1);
+            String fileName = extractFileName(url);
             Path destPath = modsFolder.resolve(fileName);
 
             MeteorAddonsAddon.LOG.info("Downloading addon {} to {}", addon.getName(), destPath);
@@ -218,6 +220,20 @@ public class AddonManager extends System<AddonManager> {
             String successUrl = HttpClient.downloadFileWithFallback(downloadUrls, destPath);
 
             if (successUrl != null) {
+                // If a fallback URL succeeded, rename the file to match the actual download
+                if (!successUrl.equals(url)) {
+                    try {
+                        String actualFileName = extractFileName(successUrl);
+                        Path actualDestPath = modsFolder.resolve(actualFileName);
+                        if (!destPath.equals(actualDestPath)) {
+                            Files.move(destPath, actualDestPath, StandardCopyOption.REPLACE_EXISTING);
+                            MeteorAddonsAddon.LOG.info("Renamed downloaded file to match actual URL: {}", actualFileName);
+                        }
+                    } catch (Exception e) {
+                        MeteorAddonsAddon.LOG.warn("Failed to rename downloaded file, keeping original name: {}", e.getMessage());
+                    }
+                }
+
                 MeteorAddonsAddon.LOG.info("Successfully downloaded addon: {}", addon.getName());
                 installedAddonNames.add(addon.getName());
                 save();
@@ -232,6 +248,17 @@ public class AddonManager extends System<AddonManager> {
                 addon.getName(), e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * Extract the filename from a URL, stripping any query string or fragment.
+     */
+    private static String extractFileName(String url) {
+        int queryStart = url.indexOf('?');
+        if (queryStart != -1) url = url.substring(0, queryStart);
+        int fragmentStart = url.indexOf('#');
+        if (fragmentStart != -1) url = url.substring(0, fragmentStart);
+        return url.substring(url.lastIndexOf('/') + 1);
     }
 
     public List<Addon> getOnlineAddons() {

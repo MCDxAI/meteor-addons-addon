@@ -81,18 +81,19 @@ public class AddonMetadata {
         }
 
         List<String> urls = new ArrayList<>();
+        String currentVersion = VersionUtil.getCurrentMinecraftVersion();
 
-        // Priority 1: Latest Release
-        if (links.latest_release != null && !links.latest_release.isEmpty()) {
+        // Priority 1: Latest Release (only if it matches current MC version)
+        if (links.latest_release != null && !links.latest_release.isEmpty()
+                && VersionUtil.containsVersion(links.latest_release, currentVersion)) {
             urls.add(links.latest_release);
         }
 
         // Priority 2: Compatible downloads from the list
         if (links.downloads != null && !links.downloads.isEmpty()) {
-            String currentVersion = VersionUtil.getCurrentMinecraftVersion();
-
             links.downloads.stream()
-                    .filter(url -> url != null && url.contains(currentVersion))
+                    .filter(url -> url != null && VersionUtil.containsVersion(url, currentVersion))
+                    .filter(url -> !urls.contains(url))
                     .forEach(urls::add);
         }
 

@@ -75,23 +75,42 @@ public class GitHubReleaseAPI {
     }
 
     /**
-     * Find the asset digest for a JAR file from the release.
-     * Looks for .jar files and returns the first match's digest.
+     * Find the JAR asset from a release that matches the current Minecraft version.
+     * If multiple JARs exist, selects the one whose filename contains the current version
+     * and returns empty if none match. Single-JAR releases are assumed version-agnostic.
      */
     public static Optional<AssetInfo> findJarAsset(ReleaseInfo release) {
         if (release.assets == null || release.assets.isEmpty()) {
             return Optional.empty();
         }
 
-        return release.assets.stream()
+        List<Asset> jars = release.assets.stream()
             .filter(asset -> asset.name != null && asset.name.endsWith(".jar"))
-            .findFirst()
-            .map(asset -> new AssetInfo(
-                asset.name,
-                asset.browserDownloadUrl,
-                HashUtil.parseGitHubDigest(asset.digest),
-                asset.size
-            ));
+            .toList();
+
+        if (jars.isEmpty()) {
+            return Optional.empty();
+        }
+
+        String currentVersion = VersionUtil.getCurrentMinecraftVersion();
+
+        Optional<Asset> versionMatch = jars.stream()
+            .filter(asset -> VersionUtil.containsVersion(asset.name, currentVersion))
+            .findFirst();
+
+        // Multi-JAR release with no version match — no safe fallback
+        if (versionMatch.isEmpty() && jars.size() > 1) {
+            return Optional.empty();
+        }
+
+        Asset match = versionMatch.orElse(jars.get(0));
+
+        return Optional.of(new AssetInfo(
+            match.name,
+            match.browserDownloadUrl,
+            HashUtil.parseGitHubDigest(match.digest),
+            match.size
+        ));
     }
 
     /**
