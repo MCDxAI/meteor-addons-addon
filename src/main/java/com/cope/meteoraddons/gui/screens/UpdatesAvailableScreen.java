@@ -74,9 +74,7 @@ public class UpdatesAvailableScreen extends WindowScreen {
             table.row();
         }
 
-        contentList.add(theme.horizontalSeparator()).expandX().padVertical(4);
-
-        // Progress bar (hidden initially)
+        // Progress bar (hidden initially, shown during downloads)
         progressBar = contentList.add(new WProgressBar(300, 20)).expandX().widget();
         progressBar.setLabel("Ready");
         progressBar.visible = false;
@@ -96,8 +94,6 @@ public class UpdatesAvailableScreen extends WindowScreen {
             selectToggle.set(allSelected ? "Select All" : "Select None");
         };
 
-        buttons.add(theme.horizontalSeparator()).padHorizontal(8);
-
         // Update Selected button
         updateSelectedButton = buttons.add(theme.button("Update Selected")).expandCellX().widget();
         updateSelectedButton.action = this::downloadSelectedUpdates;
@@ -108,7 +104,7 @@ public class UpdatesAvailableScreen extends WindowScreen {
 
         // Close button
         WButton closeButton = buttons.add(theme.button("Later")).widget();
-        closeButton.action = this::close;
+        closeButton.action = this::onClose;
     }
 
     private List<UpdateInfo> getSelectedUpdates() {
@@ -221,7 +217,7 @@ public class UpdatesAvailableScreen extends WindowScreen {
         laterBtn.action = () -> {
             // Clean up and close without installing
             downloadManager.clearStagedUpdates();
-            close();
+            onClose();
         };
     }
 }

@@ -21,7 +21,7 @@ import meteordevelopment.meteorclient.gui.widgets.containers.WVerticalList;
 import meteordevelopment.meteorclient.gui.widgets.pressable.WButton;
 import meteordevelopment.meteorclient.renderer.Texture;
 import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.util.Util;
 
 import com.cope.meteoraddons.util.TimeUtil;
@@ -171,17 +171,17 @@ public class AddonDetailScreen extends WindowScreen {
         if (addon.getGithubUrl().isPresent()) {
             WButton btn = actions.add(theme.button("GitHub")).widget();
             final String url = addon.getGithubUrl().get();
-            btn.action = () -> Util.getOperatingSystem().open(url);
+            btn.action = () -> Util.getPlatform().openUri(url);
         }
         if (addon.getDiscordUrl().isPresent()) {
             WButton btn = actions.add(theme.button("Discord")).widget();
             final String url = addon.getDiscordUrl().get();
-            btn.action = () -> Util.getOperatingSystem().open(url);
+            btn.action = () -> Util.getPlatform().openUri(url);
         }
         if (addon.getHomepageUrl().isPresent()) {
             WButton btn = actions.add(theme.button("Homepage")).widget();
             final String url = addon.getHomepageUrl().get();
-            btn.action = () -> Util.getOperatingSystem().open(url);
+            btn.action = () -> Util.getPlatform().openUri(url);
         }
 
         // Back Button

@@ -139,7 +139,7 @@ public class GitHubReleaseAPI {
         List<Asset> assets;
     }
 
-    private static class Asset {
+    static class Asset {
         String name;
 
         @SerializedName("browser_download_url")

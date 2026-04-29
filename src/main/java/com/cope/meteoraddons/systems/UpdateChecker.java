@@ -10,7 +10,7 @@ import com.cope.meteoraddons.util.HashUtil;
 import meteordevelopment.meteorclient.systems.System;
 import meteordevelopment.meteorclient.systems.Systems;
 import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -45,12 +45,12 @@ public class UpdateChecker extends System<UpdateChecker> {
     }
 
     @Override
-    public NbtCompound toTag() {
-        return new NbtCompound();
+    public CompoundTag toTag() {
+        return new CompoundTag();
     }
 
     @Override
-    public UpdateChecker fromTag(NbtCompound tag) {
+    public UpdateChecker fromTag(CompoundTag tag) {
         return this;
     }
 

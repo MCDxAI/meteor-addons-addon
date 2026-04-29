@@ -1,0 +1,35 @@
+name: Tests
+
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'build.gradle.kts'
+      - 'gradle/libs.versions.toml'
+      - '.github/workflows/test.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'build.gradle.kts'
+      - 'gradle/libs.versions.toml'
+      - '.github/workflows/test.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run tests
+        run: chmod +x ./gradlew && ./gradlew test --no-configuration-cache

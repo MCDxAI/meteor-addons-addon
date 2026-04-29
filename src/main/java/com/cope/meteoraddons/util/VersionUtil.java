@@ -7,9 +7,14 @@ public class VersionUtil {
 
     public static String getCurrentMinecraftVersion() {
         if (cachedVersion == null) {
-            cachedVersion = SharedConstants.getGameVersion().id();
+            cachedVersion = SharedConstants.getCurrentVersion().name();
         }
         return cachedVersion;
+    }
+
+    /** Allows tests to inject a version without Minecraft runtime. Do not call in production code. */
+    public static void setCurrentVersionForTest(String version) {
+        cachedVersion = version;
     }
 
     /**

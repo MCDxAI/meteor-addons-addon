@@ -7,10 +7,10 @@ import com.mojang.blaze3d.textures.TextureFormat;
 import meteordevelopment.meteorclient.renderer.Texture;
 import meteordevelopment.meteorclient.systems.System;
 import meteordevelopment.meteorclient.systems.Systems;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.resource.SynchronousResourceReloader;
+import com.mojang.blaze3d.platform.NativeImage;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Thread-safe: iconDataCache uses ConcurrentHashMap, textureRegistry is
  * render-thread only.
  */
-public class IconPreloadSystem extends System<IconPreloadSystem> implements SynchronousResourceReloader {
+public class IconPreloadSystem extends System<IconPreloadSystem> implements ResourceManagerReloadListener {
     private final Map<String, byte[]> iconDataCache = new ConcurrentHashMap<>();
     private final Map<String, Texture> textureRegistry = new ConcurrentHashMap<>();
     private Texture defaultTexture;
@@ -114,10 +114,10 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
     }
 
     /**
-     * SynchronousResourceReloader: called on render thread during resource load.
+     * ResourceManagerReloadListener: called on render thread during resource load.
      */
     @Override
-    public void reload(ResourceManager manager) {
+    public void onResourceManagerReload(ResourceManager manager) {
         MeteorAddonsAddon.LOG.info("Starting icon preload: {} cached icons", iconDataCache.size());
 
         for (Texture oldTexture : textureRegistry.values()) {
@@ -210,12 +210,12 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Sync
     }
 
     @Override
-    public NbtCompound toTag() {
-        return new NbtCompound();
+    public CompoundTag toTag() {
+        return new CompoundTag();
     }
 
     @Override
-    public IconPreloadSystem fromTag(NbtCompound tag) {
+    public IconPreloadSystem fromTag(CompoundTag tag) {
         return this;
     }
 }

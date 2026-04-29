@@ -15,7 +15,7 @@ import meteordevelopment.meteorclient.systems.Systems;
 import meteordevelopment.meteorclient.utils.network.MeteorExecutor;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -86,14 +86,14 @@ public class AddonManager extends System<AddonManager> {
     }
 
     @Override
-    public NbtCompound toTag() {
-        NbtCompound tag = new NbtCompound();
+    public CompoundTag toTag() {
+        CompoundTag tag = new CompoundTag();
         // TODO: Save installed addons list
         return tag;
     }
 
     @Override
-    public AddonManager fromTag(NbtCompound tag) {
+    public AddonManager fromTag(CompoundTag tag) {
         // TODO: Load installed addons list
         return this;
     }
@@ -190,7 +190,7 @@ public class AddonManager extends System<AddonManager> {
 
         mc.execute(() -> {
             MeteorAddonsAddon.LOG.info("Converting downloaded icons to GPU textures");
-            IconPreloadSystem.get().reload(mc.getResourceManager());
+            IconPreloadSystem.get().onResourceManagerReload(mc.getResourceManager());
 
             // Notify that loading is complete
             if (onLoadComplete != null) {
@@ -253,7 +253,7 @@ public class AddonManager extends System<AddonManager> {
     /**
      * Extract the filename from a URL, stripping any query string or fragment.
      */
-    private static String extractFileName(String url) {
+    static String extractFileName(String url) {
         int queryStart = url.indexOf('?');
         if (queryStart != -1) url = url.substring(0, queryStart);
         int fragmentStart = url.indexOf('#');

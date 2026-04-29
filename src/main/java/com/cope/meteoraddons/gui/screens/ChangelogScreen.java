@@ -6,7 +6,7 @@ import meteordevelopment.meteorclient.gui.WindowScreen;
 import meteordevelopment.meteorclient.gui.widgets.containers.WHorizontalList;
 import meteordevelopment.meteorclient.gui.widgets.containers.WVerticalList;
 import meteordevelopment.meteorclient.gui.widgets.pressable.WButton;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.util.Util;
 
 import java.util.regex.Matcher;
@@ -62,7 +62,7 @@ public class ChangelogScreen extends WindowScreen {
                 // Convert download URL to release page URL
                 String releaseUrl = update.getDownloadUrl()
                     .replaceFirst("/releases/download/[^/]+/.*", "/releases/latest");
-                Util.getOperatingSystem().open(releaseUrl);
+                Util.getPlatform().openUri(releaseUrl);
             };
         }
 
@@ -141,7 +141,7 @@ public class ChangelogScreen extends WindowScreen {
 
             var label = content.add(theme.label(displayLine, maxWidth)).widget();
             label.color(theme.textColor());
-            label.action = () -> Util.getOperatingSystem().open(linkUrl);
+            label.action = () -> Util.getPlatform().openUri(linkUrl);
             return;
         }
 
@@ -152,7 +152,7 @@ public class ChangelogScreen extends WindowScreen {
 
             var label = content.add(theme.label(line, maxWidth)).widget();
             label.color(theme.textColor());
-            label.action = () -> Util.getOperatingSystem().open(url);
+            label.action = () -> Util.getPlatform().openUri(url);
             return;
         }
 

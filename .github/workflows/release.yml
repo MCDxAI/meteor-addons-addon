@@ -1,16 +1,23 @@
-name: Build and Release Addon
+name: Build and Release
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - '**.java'
-      - '.github/workflows/build-release.yml'
+      - 'src/**'
+      - 'build.gradle.kts'
+      - 'gradle/**'
+      - '.github/workflows/release.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'build.gradle.kts'
+      - 'gradle/**'
+      - '.github/workflows/release.yml'
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version (e.g. 1.2.3)'
+        description: 'Release version (e.g. 0.3.0)'
         required: true
         type: string
       release_name:
@@ -18,7 +25,7 @@ on:
         required: false
         type: string
       prerelease:
-        description: 'Mark the manual release as a prerelease'
+        description: 'Mark as prerelease'
         required: true
         default: false
         type: boolean
@@ -43,28 +50,22 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
 
       - name: Determine release metadata
         id: meta
+        if: github.event_name != 'pull_request'
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             TAG="v${{ github.event.inputs.version }}"
             RELEASE_NAME="${{ github.event.inputs.release_name }}"
-            if [ -z "$RELEASE_NAME" ]; then
-              RELEASE_NAME="$TAG"
-            fi
-            if [ "${{ github.event.inputs.prerelease }}" = "true" ]; then
-              PRERELEASE="true"
-            else
-              PRERELEASE="false"
-            fi
+            [ -z "$RELEASE_NAME" ] && RELEASE_NAME="$TAG"
+            [ "${{ github.event.inputs.prerelease }}" = "true" ] && PRERELEASE="true" || PRERELEASE="false"
           else
-            # Use version from gradle.properties + timestamp for dev builds
-            VERSION=$(grep "^mod_version=" gradle.properties | cut -d'=' -f2)
+            VERSION=$(grep '^mod-version' gradle/libs.versions.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
             TIMESTAMP=$(date -u +%Y%m%d-%H%M%S)
             TAG="v${VERSION}-dev.${TIMESTAMP}"
-            RELEASE_NAME="Dev Build (${TIMESTAMP})"
+            RELEASE_NAME="Dev Build ${VERSION} (${TIMESTAMP})"
             PRERELEASE="true"
           fi
           {
@@ -80,11 +81,14 @@ jobs:
         run: ./gradlew build --no-configuration-cache
 
       - name: Publish Release
+        if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.meta.outputs.tag_name }}
+          target_commitish: ${{ github.sha }}
           name: ${{ steps.meta.outputs.release_name }}
           prerelease: ${{ steps.meta.outputs.prerelease }}
           files: build/libs/*.jar
+          fail_on_unmatched_files: true

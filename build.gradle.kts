@@ -4,12 +4,11 @@ plugins {
 
 base {
     archivesName = properties["archives_base_name"] as String
-    version = libs.versions.mod.version.get()
     group = properties["maven_group"] as String
+    version = libs.versions.mod.version.get()
 }
 
 repositories {
-    mavenCentral()
     maven {
         name = "meteor-maven"
         url = uri("https://maven.meteordev.org/releases")
@@ -18,23 +17,23 @@ repositories {
         name = "meteor-maven-snapshots"
         url = uri("https://maven.meteordev.org/snapshots")
     }
+    mavenCentral()
 }
 
-fun DependencyHandler.modInclude(
-    dependencyProvider: Provider<out MinimalExternalModuleDependency>
-) {
-    modImplementation(dependencyProvider)
-    include(dependencyProvider)
+val modInclude: Configuration by configurations.creating
+
+configurations {
+    implementation.configure { extendsFrom(modInclude) }
+    include.configure { extendsFrom(modInclude) }
 }
 
 dependencies {
     // Fabric
     minecraft(libs.minecraft)
-    mappings(variantOf(libs.yarn) { classifier("v2") })
-    modImplementation(libs.fabric.loader)
+    implementation(libs.fabric.loader)
 
     // Meteor
-    modImplementation(libs.meteor.client)
+    implementation(libs.meteor.client)
 
     // HTTP client for downloading addons
     modInclude(libs.okhttp)
@@ -46,7 +45,15 @@ dependencies {
 
     // Testing
     testImplementation(libs.junitApi)
+    testImplementation(libs.junitParams)
     testRuntimeOnly(libs.junitEngine)
+    testRuntimeOnly(libs.junitLauncher)
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get().toInt()))
+    }
 }
 
 tasks {
@@ -73,14 +80,9 @@ tasks {
         }
     }
 
-    java {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-
     withType<JavaCompile> {
         options.encoding = "UTF-8"
-        options.release = 21
+        options.release = 25
         options.compilerArgs.add("-Xlint:deprecation")
         options.compilerArgs.add("-Xlint:unchecked")
     }

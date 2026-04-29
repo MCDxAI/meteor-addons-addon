@@ -49,7 +49,7 @@ public class UpdateInstaller {
             Thread.sleep(500);
 
             // Exit Minecraft
-            mc.scheduleStop();
+            mc.stop();
 
         } catch (Exception e) {
             MeteorAddonsAddon.LOG.error("Failed to install updates", e);
