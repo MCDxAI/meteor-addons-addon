@@ -33,7 +33,7 @@
 
 | Step | Instructions |
 | --- | --- |
-| **Requirements** | • Java 21 or higher<br>• Minecraft 1.21.11<br>• Fabric Loader 0.18.2+<br>• Meteor Client 1.21.11+ |
+| **Requirements** | • Java 25 or higher<br>• Minecraft 26.1.2<br>• Fabric Loader 0.19.2+<br>• Meteor Client 26.1.2+ |
 | **Installation** | 1. Download the latest `.jar` from [releases](https://github.com/MCDxAI/meteor-addons-addon/releases)<br>2. Place in `.minecraft/mods/` alongside Meteor Client<br>3. Launch Minecraft with Fabric profile |
 | **Usage** | 1. Open Meteor Client GUI (Right Shift by default)<br>2. Navigate to the **Addons** tab<br>3. Browse online addons or view installed addons<br>4. Click any addon for details and installation |
 
@@ -60,33 +60,44 @@
 
 ```
 src/main/java/com/cope/meteoraddons/
-├── MeteorAddonsAddon.java      # Main addon entry point
+├── MeteorAddonsAddon.java          # Main addon entry point
 ├── addons/
-│   ├── Addon.java              # Abstract addon class
-│   ├── InstalledAddon.java     # Represents a locally installed addon
-│   └── OnlineAddon.java        # Represents an addon available online
+│   ├── Addon.java                  # Abstract addon class
+│   ├── InstalledAddon.java         # Represents a locally installed addon
+│   └── OnlineAddon.java            # Represents an addon available online
 ├── config/
-│   └── IconSizeConfig.java     # Icon size configuration
+│   └── IconSizeConfig.java         # Icon size configuration
 ├── gui/
 │   ├── screens/
-│   │   ├── AddonDetailScreen.java     # Screen showing details of an addon
-│   │   ├── BrowseAddonsScreen.java    # Screen for browsing online addons
-│   │   └── InstalledAddonsScreen.java # Screen for managing installed addons
+│   │   ├── AddonDetailScreen.java         # Screen showing details of an addon
+│   │   ├── BrowseAddonsScreen.java        # Screen for browsing online addons
+│   │   ├── ChangelogScreen.java           # Screen displaying addon changelogs
+│   │   ├── InstalledAddonsScreen.java     # Screen for managing installed addons
+│   │   └── UpdatesAvailableScreen.java    # Screen for downloading addon updates
 │   ├── tabs/
-│   │   └── AddonsTab.java      # GUI tab for addon browser
+│   │   └── AddonsTab.java          # GUI tab for addon browser
 │   └── widgets/
-│       ├── WAddonCard.java     # Widget for displaying an addon in a grid
-│       └── WAddonListItem.java # Widget for displaying an addon in a list
+│       ├── WAddonCard.java         # Widget for displaying an addon in a grid
+│       ├── WAddonList.java         # Widget for addon list container
+│       ├── WAddonListItem.java     # Widget for displaying an addon in a list
+│       └── WProgressBar.java       # Widget for download progress indication
 ├── models/
-│   └── AddonMetadata.java      # Data model for addon metadata
+│   ├── AddonMetadata.java          # Data model for addon metadata
+│   └── UpdateInfo.java             # Data model for available updates
 ├── systems/
-│   ├── AddonManager.java       # System for managing addon state
-│   └── IconPreloadSystem.java  # System for async icon loading
+│   ├── AddonManager.java           # System for managing addon state
+│   ├── IconPreloadSystem.java      # System for async icon loading
+│   ├── UpdateChecker.java          # System for checking addon updates
+│   ├── UpdateDownloadManager.java  # System for downloading addon updates
+│   └── UpdateInstaller.java        # System for installing addon updates
 └── util/
-    ├── HttpClient.java         # HTTP client wrapper
-    ├── IconCache.java          # Caching system for icons
-    ├── TimeUtil.java           # Time utility functions
-    └── VersionUtil.java        # Utility for version comparison
+    ├── AddonSearchUtil.java        # Search and filtering utilities
+    ├── GitHubReleaseAPI.java       # GitHub Releases API client
+    ├── HashUtil.java               # SHA-256 hash utilities
+    ├── HttpClient.java             # HTTP client wrapper
+    ├── IconCache.java              # Caching system for icons
+    ├── TimeUtil.java               # Time utility functions
+    └── VersionUtil.java            # Utility for version comparison
 ```
 
 <div align="center">
