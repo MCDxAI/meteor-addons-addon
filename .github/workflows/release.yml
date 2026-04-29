@@ -92,3 +92,4 @@ jobs:
           prerelease: ${{ steps.meta.outputs.prerelease }}
           files: build/libs/*.jar
           fail_on_unmatched_files: true
+          generate_release_notes: ${{ github.event_name == 'workflow_dispatch' }}
