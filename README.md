@@ -13,22 +13,6 @@
 
 <div align="center">
 
-## Features
-
-| Capability | Details |
-| --- | --- |
-| **In-Game Addon Browser** | Browse available Meteor addons directly from within Minecraft through an integrated GUI |
-| **One-Click Installation** | Download and install addons with a single click • No manual file management required |
-| **Automatic Updates** | Built-in update system with hash verification for addon integrity |
-| **Smart Filtering** | Automatically filters addons by Minecraft version compatibility • Shows only verified, working addons |
-| **Grid & List Views** | Switch between grid cards and compact list view based on preference |
-| **Icon Preloading** | Async icon loading system with GPU texture caching for smooth performance |
-| **Detailed Addon Info** | View full metadata including description, author, download count, and last update |
-
-</div>
-
-<div align="center">
-
 ## Quick Start
 
 | Step | Instructions |
@@ -41,6 +25,21 @@
 
 <div align="center">
 
+## Features
+
+| Capability | Details |
+| --- | --- |
+| **In-Game Addon Browser** | Browse available Meteor addons directly from within Minecraft through an integrated GUI |
+| **One-Click Installation** | Download and install addons with a single click • No manual file management required |
+| **Automatic Updates** | Built-in update system with hash verification for addon integrity |
+| **Smart Filtering** | Automatically filters addons by Minecraft version compatibility • Shows only verified, working addons |
+| **Grid & List Views** | Switch between grid cards and compact list view based on preference |
+| **Detailed Addon Info** | View full metadata including description, author, download count, and last update |
+
+</div>
+
+<div align="center">
+
 ## Development
 
 | Task | Command |
@@ -48,57 +47,8 @@
 | **Build** | `./gradlew build` – Compiles and packages addon to `build/libs/` |
 | **Clean Build** | `./gradlew clean build` – Removes old artifacts and rebuilds |
 | **Run Tests** | `./gradlew test` – Executes JUnit test suite |
-| **Dependencies** | Bundled: OkHttp 4.12.0, Gson 2.11.0 • Provided: Meteor Client, Fabric Loader |
 
 </div>
-
-<div align="center">
-
-## Project Structure
-
-</div>
-
-```
-src/main/java/com/cope/meteoraddons/
-├── MeteorAddonsAddon.java          # Main addon entry point
-├── addons/
-│   ├── Addon.java                  # Abstract addon class
-│   ├── InstalledAddon.java         # Represents a locally installed addon
-│   └── OnlineAddon.java            # Represents an addon available online
-├── config/
-│   └── IconSizeConfig.java         # Icon size configuration
-├── gui/
-│   ├── screens/
-│   │   ├── AddonDetailScreen.java         # Screen showing details of an addon
-│   │   ├── BrowseAddonsScreen.java        # Screen for browsing online addons
-│   │   ├── ChangelogScreen.java           # Screen displaying addon changelogs
-│   │   ├── InstalledAddonsScreen.java     # Screen for managing installed addons
-│   │   └── UpdatesAvailableScreen.java    # Screen for downloading addon updates
-│   ├── tabs/
-│   │   └── AddonsTab.java          # GUI tab for addon browser
-│   └── widgets/
-│       ├── WAddonCard.java         # Widget for displaying an addon in a grid
-│       ├── WAddonList.java         # Widget for addon list container
-│       ├── WAddonListItem.java     # Widget for displaying an addon in a list
-│       └── WProgressBar.java       # Widget for download progress indication
-├── models/
-│   ├── AddonMetadata.java          # Data model for addon metadata
-│   └── UpdateInfo.java             # Data model for available updates
-├── systems/
-│   ├── AddonManager.java           # System for managing addon state
-│   ├── IconPreloadSystem.java      # System for async icon loading
-│   ├── UpdateChecker.java          # System for checking addon updates
-│   ├── UpdateDownloadManager.java  # System for downloading addon updates
-│   └── UpdateInstaller.java        # System for installing addon updates
-└── util/
-    ├── AddonSearchUtil.java        # Search and filtering utilities
-    ├── GitHubReleaseAPI.java       # GitHub Releases API client
-    ├── HashUtil.java               # SHA-256 hash utilities
-    ├── HttpClient.java             # HTTP client wrapper
-    ├── IconCache.java              # Caching system for icons
-    ├── TimeUtil.java               # Time utility functions
-    └── VersionUtil.java            # Utility for version comparison
-```
 
 <div align="center">
 
