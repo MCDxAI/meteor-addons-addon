@@ -74,6 +74,19 @@ jobs:
             echo "prerelease=$PRERELEASE"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Extract release notes from CHANGELOG.md
+        if: github.event_name != 'pull_request'
+        run: |
+          touch release_body.md
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then exit 0; fi
+          VERSION="${{ steps.meta.outputs.tag_name }}"
+          VERSION="${VERSION#v}"
+          awk -v ver="## [$VERSION]" '
+            index($0, ver) == 1 { found=1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > release_body.md
+
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
@@ -92,4 +105,5 @@ jobs:
           prerelease: ${{ steps.meta.outputs.prerelease }}
           files: build/libs/*.jar
           fail_on_unmatched_files: true
+          body_path: release_body.md
           generate_release_notes: ${{ github.event_name == 'workflow_dispatch' }}
