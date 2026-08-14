@@ -2,9 +2,9 @@
 
 # Meteor Addons
 
-![Minecraft](https://img.shields.io/badge/Minecraft-26.1.2-00800f?style=flat)
-![Fabric](https://img.shields.io/badge/Fabric-0.19.2-3d5dff?style=flat)
-![Meteor Client](https://img.shields.io/badge/Meteor_Client-26.1.2-8a11b6?style=flat)
+![Minecraft](https://img.shields.io/badge/Minecraft-26.2-00800f?style=flat)
+![Fabric](https://img.shields.io/badge/Fabric-0.19.3-3d5dff?style=flat)
+![Meteor Client](https://img.shields.io/badge/Meteor_Client-26.2-8a11b6?style=flat)
 ![Java](https://img.shields.io/badge/Java-25-e28655?style=flat)
 
 **Browse, install, and update Meteor Client addons without leaving Minecraft**
@@ -17,7 +17,7 @@
 
 | Step | Instructions |
 | --- | --- |
-| **Requirements** | • Java 25 or higher<br>• Minecraft 26.1.2<br>• Fabric Loader 0.19.2+<br>• Meteor Client 26.1.2+ |
+| **Requirements** | • Java 25 or higher<br>• Minecraft 26.2<br>• Fabric Loader 0.19.3+<br>• Meteor Client 26.2+ |
 | **Installation** | 1. Download the latest `.jar` from [releases](https://github.com/MCDxAI/meteor-addons-addon/releases)<br>2. Place in `.minecraft/mods/` alongside Meteor Client<br>3. Launch Minecraft with Fabric profile |
 | **Usage** | 1. Open Meteor Client GUI (Right Shift by default)<br>2. Navigate to the **Addons** tab<br>3. Browse online addons or view installed addons<br>4. Click any addon for details and installation |
 

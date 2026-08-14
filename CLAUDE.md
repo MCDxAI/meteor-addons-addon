@@ -200,7 +200,7 @@ Addons support two version fields:
 
 - **OkHttp 4.12.0**: HTTP client (included in JAR via `include()`)
 - **Gson 2.11.0**: JSON parsing (included in JAR)
-- **Meteor Client 26.1.2-SNAPSHOT**: Host mod (provided)
+- **Meteor Client 26.2-SNAPSHOT**: Host mod (provided)
 
 The `include()` directive in build.gradle.kts bundles dependencies into the addon JAR since Meteor doesn't provide them.
 

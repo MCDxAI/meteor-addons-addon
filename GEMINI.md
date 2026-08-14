@@ -8,12 +8,12 @@ This file provides comprehensive context and guidelines for Gemini agents workin
 
 *   **Type:** Java Project (Fabric Mod / Meteor Client Addon)
 *   **Language:** Java 25 (JDK 25)
-*   **Minecraft:** 26.1.2
-*   **Fabric Loader:** 0.19.2
-*   **Fabric Loom:** 1.16
-*   **Gradle:** 9.4.1
-*   **Meteor Client:** 26.1.2-SNAPSHOT
-*   **Mod Version:** 0.3.0
+*   **Minecraft:** 26.2
+*   **Fabric Loader:** 0.19.3
+*   **Fabric Loom:** 1.17-SNAPSHOT
+*   **Gradle:** 9.6.1
+*   **Meteor Client:** 26.2-SNAPSHOT
+*   **Mod Version:** 0.4.0
 *   **Build System:** Gradle (Kotlin DSL)
 *   **Dependencies:** Meteor Client, Fabric Loader, OkHttp, Gson
 *   **Data Source:** Fetches metadata from the [meteor-addon-scanner](https://github.com/cqb13/meteor-addon-scanner) repository.
