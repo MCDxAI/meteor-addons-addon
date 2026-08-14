@@ -46,10 +46,10 @@ public class AddonsTab extends Tab {
             WHorizontalList nav = add(theme.horizontalList()).expandX().centerX().widget();
 
             WButton installedButton = nav.add(theme.button("Installed Addons")).minWidth(200).widget();
-            installedButton.action = () -> mc.setScreen(new InstalledAddonsScreen(theme));
+            installedButton.action = () -> mc.gui.setScreen(new InstalledAddonsScreen(theme));
 
             WButton browseButton = nav.add(theme.button("Browse Addons")).minWidth(200).widget();
-            browseButton.action = () -> mc.setScreen(new BrowseAddonsScreen(theme));
+            browseButton.action = () -> mc.gui.setScreen(new BrowseAddonsScreen(theme));
 
             add(theme.horizontalSeparator()).expandX();
 

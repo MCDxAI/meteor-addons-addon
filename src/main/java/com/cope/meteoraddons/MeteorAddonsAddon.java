@@ -40,7 +40,7 @@ public class MeteorAddonsAddon extends MeteorAddon {
             LOG.info("Found {} addon updates available", updates.size());
             // Show the updates screen on the next tick (ensures we're on render thread)
             mc.execute(() -> {
-                mc.setScreen(new UpdatesAvailableScreen(GuiThemes.get(), updates));
+                mc.gui.setScreen(new UpdatesAvailableScreen(GuiThemes.get(), updates));
             });
         });
 

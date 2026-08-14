@@ -36,7 +36,7 @@ public class InstalledAddonsScreen extends WindowScreen {
             // List of installed addons (no install button needed)
             add(new WAddonList(
                     addons,
-                    addon -> () -> mc.setScreen(new AddonDetailScreen(theme, addon, this)),
+                    addon -> () -> mc.gui.setScreen(new AddonDetailScreen(theme, addon, this)),
                     null)).expandX();
         }
     }

@@ -69,7 +69,7 @@ public class UpdatesAvailableScreen extends WindowScreen {
 
             // Changelog button
             WButton changelogBtn = table.add(theme.button("Changelog")).widget();
-            changelogBtn.action = () -> mc.setScreen(new ChangelogScreen(theme, update, this));
+            changelogBtn.action = () -> mc.gui.setScreen(new ChangelogScreen(theme, update, this));
 
             table.row();
         }

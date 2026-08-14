@@ -200,7 +200,7 @@ Addons support two version fields:
 
 - **OkHttp 4.12.0**: HTTP client (included in JAR via `include()`)
 - **Gson 2.11.0**: JSON parsing (included in JAR)
-- **Meteor Client 1.21.10-SNAPSHOT**: Host mod (provided)
+- **Meteor Client 26.1.2-SNAPSHOT**: Host mod (provided)
 
 The `include()` directive in build.gradle.kts bundles dependencies into the addon JAR since Meteor doesn't provide them.
 
@@ -286,6 +286,6 @@ The `ai_reference/` folder (git-ignored) contains complete source code for:
 
 ## Build Output
 
-Final JAR: `build/libs/meteor-addons-0.2.0.jar` (~1.1 MB with bundled dependencies)
+Final JAR: `build/libs/meteor-addons-0.3.0.jar` (~1.1 MB with bundled dependencies)
 
 Install by placing in `.minecraft/mods/` alongside Meteor Client and Fabric Loader.

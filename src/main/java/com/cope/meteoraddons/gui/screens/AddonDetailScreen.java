@@ -157,7 +157,7 @@ public class AddonDetailScreen extends WindowScreen {
                         if (update.isPresent()) {
                             checkUpdateBtn.set("Update Found!");
                             // Show updates screen with this single update
-                            mc.setScreen(new UpdatesAvailableScreen(GuiThemes.get(),
+                            mc.gui.setScreen(new UpdatesAvailableScreen(GuiThemes.get(),
                                     Collections.singletonList(update.get())));
                         } else {
                             checkUpdateBtn.set("Up to date");
@@ -186,7 +186,7 @@ public class AddonDetailScreen extends WindowScreen {
 
         // Back Button
         WButton backButton = actions.add(theme.button("Back")).widget();
-        backButton.action = () -> mc.setScreen(parent);
+        backButton.action = () -> mc.gui.setScreen(parent);
     }
 
     /**

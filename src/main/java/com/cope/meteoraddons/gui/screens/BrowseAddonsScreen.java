@@ -118,7 +118,7 @@ public class BrowseAddonsScreen extends WindowScreen {
         WTable table = parent.add(theme.table()).expandX().widget();
         int col = 0;
         for (Addon addon : addons) {
-            table.add(new WAddonCard(addon, () -> mc.setScreen(new AddonDetailScreen(theme, addon, this))));
+            table.add(new WAddonCard(addon, () -> mc.gui.setScreen(new AddonDetailScreen(theme, addon, this))));
             col++;
             if (col >= CARDS_PER_ROW) {
                 table.row();
@@ -130,7 +130,7 @@ public class BrowseAddonsScreen extends WindowScreen {
     private void initListView(WContainer parent, List<Addon> addons) {
         parent.add(new WAddonList(
                 addons,
-                addon -> () -> mc.setScreen(new AddonDetailScreen(theme, addon, this)),
+                addon -> () -> mc.gui.setScreen(new AddonDetailScreen(theme, addon, this)),
                 addon -> button -> {
                     if (addon instanceof OnlineAddon) {
                         button.set("Downloading...");

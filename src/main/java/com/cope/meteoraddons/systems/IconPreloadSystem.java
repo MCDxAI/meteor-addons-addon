@@ -3,7 +3,7 @@ package com.cope.meteoraddons.systems;
 import com.cope.meteoraddons.MeteorAddonsAddon;
 import com.cope.meteoraddons.config.IconSizeConfig;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.TextureFormat;
+import com.mojang.blaze3d.GpuFormat;
 import meteordevelopment.meteorclient.renderer.Texture;
 import meteordevelopment.meteorclient.systems.System;
 import meteordevelopment.meteorclient.systems.Systems;
@@ -166,7 +166,7 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Reso
             image = sourceImage;
         }
 
-        Texture texture = new Texture(targetSize, targetSize, TextureFormat.RGBA8, FilterMode.LINEAR,
+        Texture texture = new Texture(targetSize, targetSize, GpuFormat.RGBA8_UNORM, FilterMode.LINEAR,
                 FilterMode.LINEAR);
 
         int[] pixels = image.makePixelArray();
@@ -190,7 +190,7 @@ public class IconPreloadSystem extends System<IconPreloadSystem> implements Reso
     }
 
     private Texture createDefaultTexture(int size) {
-        Texture texture = new Texture(size, size, TextureFormat.RGBA8, FilterMode.LINEAR, FilterMode.LINEAR);
+        Texture texture = new Texture(size, size, GpuFormat.RGBA8_UNORM, FilterMode.LINEAR, FilterMode.LINEAR);
 
         byte[] pixels = new byte[size * size * 4];
         for (int i = 0; i < pixels.length; i += 4) {

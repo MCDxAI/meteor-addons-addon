@@ -69,7 +69,7 @@ public class ChangelogScreen extends WindowScreen {
         buttons.add(theme.horizontalSeparator()).expandCellX();
 
         WButton backBtn = buttons.add(theme.button("Back")).widget();
-        backBtn.action = () -> mc.setScreen(parent);
+        backBtn.action = () -> mc.gui.setScreen(parent);
     }
 
     private void renderChangelog(String changelog) {
