@@ -4,9 +4,6 @@
     "Utility",
     "Qol"
   ],
-  "supported_versions": [
-    "1.21.11"
-  ],
   "discord": "https://discord.gg/tBCMTFDruG",
   "homepage": "https://github.com/MCDxAI/meteor-addons-addon"
 }
